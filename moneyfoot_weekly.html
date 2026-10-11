@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236ba39b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 7a16 16 20 0 1 10.98 4.362'/><path d='M12 12a13 13 0 0 1-8.66 5'/><path d='M16.83 13.634a16 16 0 0 1-9.267 7.328'/><path d='M20.66 17A13 13 0 0 0 12 12a13 13 0 0 1 0-10'/><path d='M8.17 15.366a16 16 0 0 1-1.713-11.69'/><circle cx='12' cy='12' r='10'/></svg>">
+<title>MoneyFoot · Weekly Desk</title>
+<style>
+:root{
+    /* base — petrol */
+    --bg:#0b1416; --panel:#002b34; --panel-2:#0a3a44; --line:#223038;
+    --ink:#eaf1f0; --ink-dim:#7fa39e; --ink-faint:#4f6a68;
+
+    /* state */
+    --mine:#6ba39b;      --mine-bg:#06232a;   --mine-line:#0a3a44;
+    --avail:#d98f4e;     --avail-bg:#2a1c0e;  --avail-line:#4a3416;
+    --taken:#4f6a68;     --taken-bg:transparent;
+
+    /* positions — kept as a distinct categorical set, retuned to sit on petrol */
+    --fwd:#e8896f; --mid:#6bce8a; --def:#63a8e0; --gk:#e8b84b;
+
+    /* type */
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.4}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  header{padding:18px 22px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:20}
+  .top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand{font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:-.02em}
+  .brand b{color:var(--mine)}
+  .desk-label{font-family:var(--mono);font-size:12px;color:var(--ink-faint)}
+  .spacer{flex:1}
+  .toggle{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px}
+  .toggle button{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink-dim);background:transparent;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all .15s}
+  .toggle button[aria-pressed="true"]{background:var(--mine);color:#1a1608}
+  .toggle button:hover:not([aria-pressed="true"]){color:var(--ink)}
+  .reload{font-family:var(--mono);font-size:12px;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:7px;cursor:pointer;position:relative;overflow:hidden}
+  .reload:hover{color:var(--ink);border-color:var(--ink-faint)}
+  .reload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .strip{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .stat{font-family:var(--mono);font-size:12px;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:6px}
+  .stat b{color:var(--ink)}
+  .stat.gold b{color:var(--mine)}
+  .stat.green b{color:var(--avail)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 22px;border-bottom:1px solid var(--line);position:sticky;top:66px;background:var(--bg);z-index:15}
+  .search{flex:0 1 220px;min-width:150px;background:var(--panel);border:1px solid var(--line);color:var(--ink);font-family:var(--mono);font-size:13px;padding:8px 12px;border-radius:7px;outline:none}
+  .search:focus{border-color:var(--mine)}
+  .search::placeholder{color:var(--ink-faint)}
+  .chip{font-family:var(--mono);font-size:12px;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);padding:7px 12px;border-radius:7px;cursor:pointer;user-select:none;transition:all .12s}
+  .chip[aria-pressed="true"]{color:#1a1608;font-weight:600}
+  .chip.c-mine[aria-pressed="true"]{background:var(--mine);border-color:var(--mine)}
+  .chip.c-avail[aria-pressed="true"]{background:var(--avail);border-color:var(--avail)}
+  .chip.c-pos[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+  .chip.c-mid[aria-pressed="true"]{background:var(--mid);border-color:var(--mid)}
+  .chip:hover:not([aria-pressed="true"]){color:var(--ink);border-color:var(--ink-faint)}
+  .posfilters{display:flex;gap:4px}
+  .teamsel{font-family:var(--mono);font-size:12px;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);padding:7px 10px;border-radius:7px;cursor:pointer;outline:none;max-width:150px}
+  .teamsel:focus{border-color:var(--mine)}
+  .teamsel[data-active="true"]{color:var(--mine);border-color:var(--mine-line)}
+  .wrap{padding:0 22px 48px}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  thead th{position:sticky;top:118px;background:var(--bg);z-index:10;font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+  th.num,td.num{text-align:right;font-family:var(--mono)}
+  th.sort-active{color:var(--mine)}
+  th.sort-active::after{content:" ↓";font-size:9px}
+  th.sort-active.asc::after{content:" ↑"}
+  tbody tr{border-bottom:1px solid var(--line);transition:background .1s}
+  tbody tr:hover{background:rgba(255,255,255,.03)}
+  tr.is-mine{background:var(--mine-bg)}
+  tr.is-mine:hover{background:#2a2410}
+  tr.is-mine td:first-child{box-shadow:inset 3px 0 0 var(--mine)}
+  tr.is-avail td:first-child{box-shadow:inset 3px 0 0 var(--avail)}
+  tr.is-taken{opacity:.7}
+  tr.is-taken .pname{color:var(--ink-dim)}
+  td{padding:8px;vertical-align:middle}
+  .rank{color:var(--ink-faint);font-family:var(--mono);font-size:12px;width:34px}
+  .pname{font-weight:600;letter-spacing:-.01em}
+  .pos-chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;min-width:32px;text-align:center}
+  .pos-F{color:var(--fwd);background:#2a1613}.pos-M{color:var(--mid);background:#12231a}
+  .pos-D{color:var(--def);background:#111f30}.pos-G{color:var(--gk);background:#26200d}
+  .team{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+  .vorp{font-weight:700}
+  .val{color:var(--ink-dim);font-size:12px}
+  .loader{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 22px}
+  .loader h1{font-family:var(--mono);font-size:22px;margin-bottom:18px;text-align:center}
+  .loader h1 b{color:var(--mine)}
+  .load-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .primary{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--mine);color:#1a1608;border:none;padding:11px 20px;border-radius:8px;cursor:pointer;position:relative;overflow:hidden}
+  .primary input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .err{color:var(--fwd);font-family:var(--mono);font-size:12px;margin-top:10px;min-height:16px}
+  .fxpanel{position:fixed;top:0;right:0;width:200px;height:100vh;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line);padding:14px 12px;z-index:25}
+  .fxpanel h3{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:10px}
+  .fxrow{font-family:var(--mono);font-size:12px;color:var(--ink-dim);padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:6px}
+  .fxrow b{color:var(--ink)}
+  .fxload{font-family:var(--mono);font-size:11px;color:var(--ink-dim);background:var(--bg);border:1px solid var(--line);padding:6px 10px;border-radius:6px;cursor:pointer;position:relative;overflow:hidden;margin-bottom:12px;display:inline-block}
+  .fxload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .wrap{padding-right:230px}   /* make room so table doesn't hide under panel */
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="loader" class="loader">
+  <h1><b>Money</b>Foot · Weekly Desk</h1>
+  <div class="load-actions">
+    <span class="primary">Load board .csv<input type="file" id="fileInput" accept=".csv,text/csv"></span>
+  </div>
+  <div class="err" id="loadErr"></div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="top">
+      <span class="brand"><b>Money</b>Foot</span>
+      <span class="desk-label">weekly desk</span>
+      <div class="toggle" id="leagueToggle"></div>
+      <span class="reload" id="reloadBtn">↻ Reload csv<input type="file" id="reloadInput" accept=".csv,text/csv"></span>
+      <div class="spacer"></div>
+    </div>
+    <div class="strip" id="strip"></div>
+  </header>
+  <div class="controls">
+    <input class="search" id="search" type="search" placeholder="filter by name…" autocomplete="off">
+    <div class="posfilters" id="posfilters">
+      <button class="chip c-pos" data-pos="ALL" aria-pressed="true">All</button>
+      <button class="chip c-pos" data-pos="Forward" aria-pressed="false">F</button>
+      <button class="chip c-pos" data-pos="Midfielder" aria-pressed="false">M</button>
+      <button class="chip c-pos" data-pos="Defender" aria-pressed="false">D</button>
+      <button class="chip c-pos" data-pos="Goalkeeper" aria-pressed="false">G</button>
+    </div>
+    <button class="chip c-mine" id="onlyMine" aria-pressed="false">My squad</button>
+    <button class="chip c-avail" id="onlyAvail" aria-pressed="false">Available</button>
+    <button class="chip c-avail" id="onlyStarters" aria-pressed="false">70+ min/gw</button>
+    <button class="chip c-mid" id="completeMid" aria-pressed="false">Complete mid</button>
+    <button class="chip c-avail" id="buyLow" aria-pressed="false">Buy low</button>
+    <button class="chip c-mine" id="sellHigh" aria-pressed="false">Sell high</button>
+    <select class="teamsel" id="teamSelect"><option value="ALL">All teams</option></select>
+  </div>
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th class="num sortable" data-sort="rank">#</th>
+        <th class="sortable" data-sort="web_name">Player</th>
+        <th>Pos</th>
+        <th>Team</th>
+        <th class="num sortable" data-sort="weekly_VORP">wVORP</th>
+        <th class="num sortable" data-sort="overall_VORP">oVORP</th>
+        <th class="num sortable" data-sort="x_fpl_p90">xFPL</th>
+        <th class="num sortable" data-sort="points_per_game">PPG</th>
+        <th class="num sortable" data-sort="mins_per_gw">MIN/GW</th>
+        <th class="num sortable" data-sort="defcon_p90">DEF/90</th>
+        <th class="num sortable" data-sort="xgi_p90">xGI/90</th>
+        <th class="num sortable" data-sort="bps_GW">BPS/GW</th>
+        <th class="num sortable" data-sort="last_points_per_game">PPG26</th>
+        <th class="num sortable" data-sort="fixture_score_100">FIX</th>
+        <th class="num sortable" data-sort="team_score">TM</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <aside class="fxpanel">
+    <h3>GW Predictions</h3>
+    <span class="fxload">Load fixtures csv<input type="file" id="fxInput" accept=".csv,text/csv"></span>
+    <div id="fxrows"></div>
+  </aside>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const NCOLS=15;   // keep in sync with header/row cell count (for empty-state colspan)
+  let rows=[], leagues=[], activeLeague=null;
+  let filterPos="ALL", searchTerm="", onlyMine=false, onlyAvail=false, onlyStarters=false, completeMid=false, filterTeam="ALL";
+  let sortKey="weekly_VORP", sortAsc=false;
+  let buyLowMode=false, sellHighMode=false;
+
+  function parseCSV(text){
+    text=text.replace(/\r/g,"").trim();
+    if(!text) throw new Error("Empty file.");
+    const lines=text.split("\n").filter(l=>l.trim()!=="");
+    const head=splitRow(lines[0]).map(h=>h.trim());
+    const out=[];
+    for(let i=1;i<lines.length;i++){
+      const c=splitRow(lines[i]); const o={};
+      head.forEach((h,j)=>o[h]=c[j]);
+      out.push(o);
+    }
+    return {head,rows:out};
+  }
+  function splitRow(line){
+    const res=[];let cur="",q=false;
+    for(const ch of line){
+      if(ch==='"'){q=!q;continue;}
+      if(ch===','&&!q){res.push(cur);cur="";continue;}
+      cur+=ch;
+    }
+    res.push(cur);return res;
+  }
+  function detectLeagues(head){
+    const found={};
+    head.forEach(h=>{const m=h.match(/^mine_(.+)$/);if(m)found[m[1]]=true;});
+    return Object.keys(found);
+  }
+  function norm(v){return (v==null?"":String(v)).trim();}
+  function isTrue(v){const s=norm(v).toLowerCase();return s==="true"||s==="1"||s==="yes";}
+  function numOr(v,d){const n=parseFloat(v);return isNaN(n)?d:n;}
+  function posShort(p){
+    const s=norm(p).toLowerCase();
+    if(s.startsWith("forward"))return"F";if(s.startsWith("mid"))return"M";
+    if(s.startsWith("def"))return"D";if(s.startsWith("goal"))return"G";return"";
+  }
+
+  const rowsEl=document.getElementById("rows");
+  function render(){
+    const mineCol=`mine_${activeLeague}`, availCol=`available_${activeLeague}`;
+    const view=rows.slice().sort((a,b)=>{
+      let va,vb;
+      if(sortKey==="web_name"){va=norm(a.web_name).toLowerCase();vb=norm(b.web_name).toLowerCase();
+        return (sortAsc?1:-1)*va.localeCompare(vb);}
+      va=numOr(a[sortKey],-Infinity);vb=numOr(b[sortKey],-Infinity);
+      return sortAsc?va-vb:vb-va;
+    });
+    const frag=document.createDocumentFragment();
+    let shown=0;
+    for(const r of view){
+      const mine=isTrue(r[mineCol]), avail=isTrue(r[availCol]);
+      if(filterPos!=="ALL"&&norm(r.position)!==filterPos)continue;
+      if(filterTeam!=="ALL"&&norm(r.team_name||r.team)!==filterTeam)continue;
+      if(searchTerm&&!norm(r.web_name).toLowerCase().includes(searchTerm))continue;
+      if(onlyMine&&!mine)continue;
+      if(onlyAvail&&!avail)continue;
+      if(onlyStarters&&numOr(r.mins_per_gw,0)<70)continue;
+      if(completeMid&&!(
+        norm(r.position)==="Midfielder" &&
+        numOr(r.defcon_p90,0)>0.8 &&
+        numOr(r.xgi_p90,0)>0.2 &&
+        numOr(r.mins_per_gw,0)>=70
+      ))continue;
+      if(buyLowMode && numOr(r.buy_low,0) < 0.5) continue;
+      if(sellHighMode && numOr(r.sell_high,0) < 0.5) continue;
+      shown++;
+      const sh=posShort(r.position);
+      const tr=document.createElement("tr");
+      tr.className=mine?"is-mine":avail?"is-avail":"is-taken";
+      tr.innerHTML=
+        `<td class="rank num">${norm(r.rank)||""}</td>`+
+        `<td><span class="pname">${esc(r.web_name)}</span></td>`+
+        `<td><span class="pos-chip pos-${sh}">${sh}</span></td>`+
+        `<td><span class="team">${esc(r.team_name||r.team||"")}</span></td>`+
+        `<td class="num vorp">${fmt(r.weekly_VORP,2)}</td>`+
+        `<td class="num vorp">${fmt(r.overall_VORP,2)}</td>`+
+        `<td class="num val">${fmt(r.x_fpl_p90,2)}</td>`+
+        `<td class="num val">${fmt(r.points_per_game,1)}</td>`+
+        `<td class="num val">${fmt(r.mins_per_gw,0)}</td>`+
+        `<td class="num val">${fmt(r.defcon_p90,2)}</td>`+
+        `<td class="num val">${fmt(r.xgi_p90,2)}</td>`+
+        `<td class="num val">${fmt(r.bps_GW,2)}</td>`+
+        `<td class="num val">${fmt(r.last_points_per_game,2)}</td>`+
+        `<td class="num val">${fmt(r.fixture_score_100,0)}</td>`+
+        `<td class="num val">${fmt(r.team_score,0)}</td>`
+
+      frag.appendChild(tr);
+    }
+    rowsEl.innerHTML="";
+    rowsEl.appendChild(frag);
+    if(!shown){
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td colspan="${NCOLS}" style="padding:24px;text-align:center;color:var(--ink-faint);font-family:var(--mono)">No players match. Clear a filter.</td>`;
+      rowsEl.appendChild(tr);
+    }
+    let mineCount=0,availCount=0;
+    for(const r of rows){if(isTrue(r[mineCol]))mineCount++;if(isTrue(r[availCol]))availCount++;}
+    document.getElementById("strip").innerHTML=
+      `<span class="stat gold">squad <b>${mineCount}</b></span>`+
+      `<span class="stat green">available <b>${availCount}</b></span>`+
+      `<span class="stat">showing <b>${rowsEl.children.length}</b></span>`;
+  }
+  function fmt(v,d){const n=parseFloat(v);return isNaN(n)?"—":n.toFixed(d);}
+  function esc(s){return norm(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+  function buildToggle(){
+    const el=document.getElementById("leagueToggle");
+    el.innerHTML="";
+    leagues.forEach(lg=>{
+      const b=document.createElement("button");
+      b.textContent=lg;
+      b.setAttribute("aria-pressed",lg===activeLeague);
+      b.onclick=()=>{activeLeague=lg;buildToggle();render();};
+      el.appendChild(b);
+    });
+  }
+
+  // toggle helper
+  function toggle(id,getset){
+    document.getElementById(id).addEventListener("click",e=>{
+      getset(e.currentTarget);render();
+    });
+  }
+  document.getElementById("search").addEventListener("input",e=>{searchTerm=e.target.value.toLowerCase().trim();render();});
+  document.getElementById("posfilters").addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    filterPos=b.dataset.pos;
+    document.querySelectorAll("#posfilters .chip").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render();
+  });
+  toggle("onlyMine",el=>{onlyMine=!onlyMine;if(onlyMine){onlyAvail=false;document.getElementById("onlyAvail").setAttribute("aria-pressed",false);}el.setAttribute("aria-pressed",onlyMine);});
+  toggle("onlyAvail",el=>{onlyAvail=!onlyAvail;if(onlyAvail){onlyMine=false;document.getElementById("onlyMine").setAttribute("aria-pressed",false);}el.setAttribute("aria-pressed",onlyAvail);});
+  toggle("onlyStarters",el=>{onlyStarters=!onlyStarters;el.setAttribute("aria-pressed",onlyStarters);});
+  toggle("completeMid",el=>{completeMid=!completeMid;el.setAttribute("aria-pressed",completeMid);});
+    document.getElementById("teamSelect").addEventListener("change",e=>{
+    filterTeam=e.target.value;
+    e.target.setAttribute("data-active",filterTeam!=="ALL");
+    render();
+  });
+  toggle("buyLow",el=>{buyLowMode=!buyLowMode;el.setAttribute("aria-pressed",buyLowMode);});
+  toggle("sellHigh",el=>{sellHighMode=!sellHighMode;el.setAttribute("aria-pressed",sellHighMode);});
+
+  document.querySelectorAll("th.sortable").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const k=th.dataset.sort;
+      if(sortKey===k)sortAsc=!sortAsc;else{sortKey=k;sortAsc=(k==="web_name");}
+      document.querySelectorAll("th.sortable").forEach(h=>{
+        h.classList.toggle("sort-active",h===th);h.classList.toggle("asc",h===th&&sortAsc);
+      });
+      render();
+    });
+  });
+
+  function loadText(text){
+    const {head,rows:parsed}=parseCSV(text);
+    const lg=detectLeagues(head);
+    if(!lg.length)throw new Error("No league columns found (expected mine_<League> columns).");
+    leagues=lg;
+    rows=parsed;
+    // populate team dropdown from data (unique teams, sorted)
+    const teams=[...new Set(rows.map(r=>norm(r.team_name||r.team)).filter(Boolean))].sort();
+    const sel=document.getElementById("teamSelect");
+    sel.innerHTML=`<option value="ALL">All teams</option>`+teams.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+    if(!activeLeague||!leagues.includes(activeLeague))activeLeague=leagues[0];
+    document.getElementById("loader").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    const def=document.querySelector('th[data-sort="weekly_VORP"]');if(def)def.classList.add("sort-active");
+    buildToggle();render();
+  }
+  function readFile(input,onErr){
+    const f=input.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{try{loadText(r.result);}catch(ex){if(onErr)onErr(ex);else alert(ex.message);}};
+    r.readAsText(f);
+    input.value="";   // allow re-selecting the same filename after a rerun
+  }
+  document.getElementById("fileInput").addEventListener("change",e=>{
+    readFile(e.target,ex=>{document.getElementById("loadErr").textContent=ex.message;});
+  });
+  document.getElementById("reloadInput").addEventListener("change",e=>readFile(e.target));
+
+  document.getElementById("fxInput").addEventListener("change",e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      const {rows:fx}=parseCSV(r.result);
+      document.getElementById("fxrows").innerHTML=fx.map(x=>
+        `<div class="fxrow"><span><b>${esc(x.home_team_name)}</b> ${fmt(x.pred_home_goals,1)}</span>`+
+        `<span>${fmt(x.pred_away_goals,1)} <b>${esc(x.away_team_name)}</b></span></div>`
+      ).join("");
+    };
+    r.readAsText(f);e.target.value="";
+  });
+})();
+</script>
+</body>
+</html>

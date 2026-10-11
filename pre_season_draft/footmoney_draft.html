@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FootMoney — Draft Room</title>
+<style>
+  :root{
+    /* surface */
+    --bg:#0d1117; --panel:#141b24; --panel-2:#1a232e; --line:#232f3d;
+    --ink:#e6edf3; --ink-dim:#8b98a8; --ink-faint:#5a6675;
+    /* position language */
+    --fwd:#ff6b5e; --fwd-bg:#2a1614;
+    --mid:#4ade80; --mid-bg:#12231a;
+    --def:#54a0ff; --def-bg:#111f30;
+    --gk:#ffd23f;  --gk-bg:#26200d;
+    --mine:#a970ff; --mine-bg:#1c1330;
+    --accent:#4ade80;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    font-size:14px; line-height:1.4; padding:0; min-height:100vh;
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* ---- header ---- */
+  header{
+    display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;
+    padding:16px 20px 12px; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:var(--bg); z-index:20;
+  }
+  .brand{font-family:var(--mono); font-weight:700; font-size:18px; letter-spacing:-.02em}
+  .brand b{color:var(--accent)}
+  .tagline{color:var(--ink-faint); font-size:12px; font-family:var(--mono)}
+  .header-spacer{flex:1}
+  .round-badge{
+    font-family:var(--mono); font-size:12px; color:var(--ink-dim);
+    background:var(--panel); padding:5px 10px; border:1px solid var(--line); border-radius:5px;
+  }
+  .round-badge b{color:var(--ink)}
+  .undo-btn{
+    font-family:var(--mono); font-size:12px; color:var(--ink-dim);
+    background:var(--panel); padding:5px 12px; border:1px solid var(--line);
+    border-radius:5px; cursor:pointer; transition:all .12s;
+  }
+  .undo-btn:hover:not(:disabled){color:var(--accent); border-color:var(--accent)}
+  .undo-btn:disabled{opacity:.4; cursor:default}
+
+  /* ---- layout ---- */
+  .wrap{display:grid; grid-template-columns:1fr 320px; gap:0; align-items:start}
+  @media (max-width:880px){ .wrap{grid-template-columns:1fr} .side{order:-1} }
+
+  /* ---- controls ---- */
+  .controls{
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    padding:12px 20px; border-bottom:1px solid var(--line);
+    position:sticky; top:53px; background:var(--bg); z-index:15;
+  }
+  .search{
+    flex:1; min-width:160px; background:var(--panel); border:1px solid var(--line);
+    color:var(--ink); font-family:var(--mono); font-size:13px; padding:8px 12px;
+    border-radius:6px; outline:none;
+  }
+  .search:focus{border-color:var(--accent)}
+  .search::placeholder{color:var(--ink-faint)}
+  .filters{display:flex; gap:4px}
+  .fbtn{
+    font-family:var(--mono); font-size:12px; color:var(--ink-dim);
+    background:var(--panel); border:1px solid var(--line); padding:7px 11px;
+    border-radius:6px; cursor:pointer; transition:all .12s;
+  }
+  .fbtn:hover{color:var(--ink); border-color:var(--ink-faint)}
+  .fbtn[aria-pressed="true"]{color:var(--bg); font-weight:600}
+  .fbtn.f-all[aria-pressed="true"]{background:var(--ink); border-color:var(--ink)}
+  .fbtn.f-F[aria-pressed="true"]{background:var(--fwd); border-color:var(--fwd)}
+  .fbtn.f-M[aria-pressed="true"]{background:var(--mid); border-color:var(--mid)}
+  .fbtn.f-D[aria-pressed="true"]{background:var(--def); border-color:var(--def)}
+  .fbtn.f-G[aria-pressed="true"]{background:var(--gk); border-color:var(--gk)}
+  .toggle-taken{
+    font-family:var(--mono); font-size:12px; color:var(--ink-dim);
+    display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;
+    padding:7px 11px; border:1px solid var(--line); border-radius:6px; background:var(--panel);
+  }
+  .toggle-taken input{accent-color:var(--accent)}
+
+  /* ---- table ---- */
+  .board{padding:0 20px 40px}
+  table{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums}
+  thead th{
+    position:sticky; top:104px; background:var(--bg); z-index:10;
+    font-family:var(--mono); font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--ink-faint); text-align:left;
+    padding:10px 8px; border-bottom:1px solid var(--line); cursor:default; white-space:nowrap;
+  }
+  th.sortable{cursor:pointer; user-select:none; transition:color .1s}
+  th.sortable:hover{color:var(--ink-dim)}
+  th.sort-active{color:var(--accent)}
+  th.sort-active::after{content:" ↓"; font-size:9px}
+  th.sort-active.asc::after{content:" ↑"}
+  th.num,td.num{text-align:right; font-family:var(--mono)}
+  tbody tr{border-bottom:1px solid var(--line); transition:background .1s}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
+  tbody tr:hover{background:rgba(255,255,255,.04)}
+  tbody tr.taken{opacity:.28}
+  tbody tr.mine{background:var(--mine-bg)!important}
+  tbody tr.mine:hover{background:#241640!important}
+  td{padding:8px; vertical-align:middle}
+  .rank{color:var(--ink-faint); font-family:var(--mono); font-size:12px; width:34px}
+  .pname{font-weight:600; letter-spacing:-.01em}
+  tr.taken .pname{text-decoration:line-through}
+  .pos-chip{
+    display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700;
+    padding:2px 7px; border-radius:4px; letter-spacing:.03em; min-width:34px; text-align:center;
+  }
+  .pos-F{color:var(--fwd); background:var(--fwd-bg)}
+  .pos-M{color:var(--mid); background:var(--mid-bg)}
+  .pos-D{color:var(--def); background:var(--def-bg)}
+  .pos-G{color:var(--gk);  background:var(--gk-bg)}
+  .team{font-family:var(--mono); font-size:12px; color:var(--ink-dim)}
+  .prio{font-weight:700; color:var(--ink)}
+  .vorp{color:var(--ink-dim); font-size:12px}
+  .prio.boosted{color:var(--mid)}   /* need-weighted above raw */
+  .prio.deboosted{color:var(--ink-faint)}
+  .acts{display:flex; gap:5px; justify-content:flex-end}
+  .abtn{
+    font-family:var(--mono); font-size:11px; padding:4px 9px; border-radius:5px;
+    border:1px solid var(--line); background:var(--panel); color:var(--ink-dim);
+    cursor:pointer; transition:all .1s; white-space:nowrap;
+  }
+  .abtn:hover{color:var(--ink); border-color:var(--ink-faint)}
+  .abtn.act-mine:hover{color:var(--mine); border-color:var(--mine)}
+  .abtn.act-taken:hover{color:var(--fwd); border-color:var(--fwd)}
+  tr.mine .act-mine{background:var(--mine); color:var(--bg); border-color:var(--mine); font-weight:600}
+  tr.taken .act-taken{background:var(--ink-faint); color:var(--bg); border-color:var(--ink-faint)}
+
+  /* ---- sidebar ---- */
+  .side{
+    position:sticky; top:104px; padding:16px 20px; align-self:start;
+    border-left:1px solid var(--line); min-height:calc(100vh - 104px);
+  }
+  @media (max-width:880px){ .side{position:static; border-left:none; border-bottom:1px solid var(--line); min-height:0} }
+  .side h2{
+    font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-faint); margin-bottom:10px; font-weight:600;
+  }
+  .needs{display:flex; flex-direction:column; gap:7px; margin-bottom:22px}
+  .need-row{display:flex; align-items:center; gap:10px}
+  .need-label{font-family:var(--mono); font-size:12px; width:26px; font-weight:700}
+  .need-label.F{color:var(--fwd)} .need-label.M{color:var(--mid)}
+  .need-label.D{color:var(--def)} .need-label.G{color:var(--gk)}
+  .need-bar{flex:1; height:8px; background:var(--panel-2); border-radius:4px; overflow:hidden}
+  .need-fill{height:100%; border-radius:4px; transition:width .25s ease}
+  .need-fill.F{background:var(--fwd)} .need-fill.M{background:var(--mid)}
+  .need-fill.D{background:var(--def)} .need-fill.G{background:var(--gk)}
+  .need-count{font-family:var(--mono); font-size:12px; color:var(--ink-dim); width:34px; text-align:right}
+  .need-count.full{color:var(--accent)}
+
+  .best-list{display:flex; flex-direction:column; gap:5px; margin-bottom:22px}
+  .best-item{
+    display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:5px;
+    background:var(--panel); font-size:12px; cursor:pointer; border:1px solid transparent;
+  }
+  .best-item:hover{border-color:var(--line)}
+  .best-item .bi-pos{font-family:var(--mono); font-size:10px; font-weight:700; width:16px}
+  .best-item .bi-name{flex:1; font-weight:600}
+  .best-item .bi-prio{font-family:var(--mono); font-size:11px; color:var(--ink-dim)}
+
+  .my-team{display:flex; flex-direction:column; gap:2px; margin-bottom:22px}
+  .mt-group{margin-bottom:6px}
+  .mt-head{font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.05em; padding:2px 0}
+  .mt-head.F{color:var(--fwd)} .mt-head.M{color:var(--mid)}
+  .mt-head.D{color:var(--def)} .mt-head.G{color:var(--gk)}
+  .mt-player{display:flex; align-items:center; gap:8px; padding:3px 8px; border-radius:4px;
+    background:var(--mine-bg); font-size:12px; cursor:pointer}
+  .mt-player:hover{background:#241640}
+  .mt-player .mt-name{flex:1; font-weight:600}
+  .mt-player .mt-team{font-family:var(--mono); font-size:10px; color:var(--ink-dim)}
+  .mt-empty{font-family:var(--mono); font-size:11px; color:var(--ink-faint); padding:2px 8px}
+  .side-note{font-size:11px; color:var(--ink-faint); line-height:1.5; font-family:var(--mono)}
+  .reset{
+    margin-top:14px; width:100%; font-family:var(--mono); font-size:12px;
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+    padding:8px; border-radius:6px; cursor:pointer;
+  }
+  .reset:hover{border-color:var(--fwd); color:var(--fwd)}
+
+  /* ---- loader / paste ---- */
+  .loader{
+    max-width:720px; margin:8vh auto; padding:0 20px;
+  }
+  .loader h1{font-family:var(--mono); font-size:22px; margin-bottom:6px; letter-spacing:-.02em}
+  .loader h1 b{color:var(--accent)}
+  .loader p{color:var(--ink-dim); margin-bottom:18px; font-size:13px; line-height:1.6}
+  .loader p code{background:var(--panel); padding:1px 6px; border-radius:4px; font-family:var(--mono); color:var(--ink); font-size:12px}
+  textarea{
+    width:100%; height:220px; background:var(--panel); border:1px solid var(--line);
+    color:var(--ink); font-family:var(--mono); font-size:12px; padding:12px;
+    border-radius:8px; resize:vertical; outline:none; line-height:1.5;
+  }
+  textarea:focus{border-color:var(--accent)}
+  .load-actions{display:flex; gap:10px; margin-top:12px; align-items:center; flex-wrap:wrap}
+  .primary{
+    font-family:var(--mono); font-weight:600; font-size:13px; background:var(--accent);
+    color:var(--bg); border:none; padding:10px 18px; border-radius:7px; cursor:pointer;
+  }
+  .primary:hover{filter:brightness(1.1)}
+  .ghost{
+    font-family:var(--mono); font-size:12px; background:transparent; color:var(--ink-dim);
+    border:1px solid var(--line); padding:10px 14px; border-radius:7px; cursor:pointer;
+  }
+  .ghost:hover{color:var(--ink); border-color:var(--ink-faint)}
+  .err{color:var(--fwd); font-family:var(--mono); font-size:12px; margin-top:8px; min-height:16px}
+  .hidden{display:none!important}
+  .filebtn{position:relative; overflow:hidden}
+  .filebtn input{position:absolute; inset:0; opacity:0; cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- ============ LOADER ============ -->
+<div id="loader" class="loader">
+  <h1><b>FootMoney</b> — Draft Room</h1>
+  <p>
+    Paste your <code>draft_board_2627.csv</code> below (including the header row), or load the file.
+    Expected columns: <code>rank, web_name, position, team, overall_VORP</code> — extra columns are ignored.
+    Everything runs locally in your browser; nothing is uploaded.
+  </p>
+  <textarea id="csvInput" placeholder="rank,web_name,position,team,overall_VORP,...&#10;1,Haaland,Forward,MCI,1.73,...&#10;2,Gabriel,Defender,ARS,1.66,..."></textarea>
+  <div class="load-actions">
+    <button class="primary" id="loadBtn">Build board</button>
+    <span class="ghost filebtn">Load .csv file<input type="file" id="fileInput" accept=".csv,text/csv"></span>
+    <button class="ghost" id="demoBtn">Try sample data</button>
+  </div>
+  <div class="err" id="loadErr"></div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <header>
+    <span class="brand"><b>Foot</b>Money</span>
+    <span class="tagline">draft room</span>
+    <div class="header-spacer"></div>
+    <button class="undo-btn" id="undoBtn" disabled>↶ Undo</button>
+    <span class="round-badge">picks made <b id="pickCount">0</b></span>
+    <span class="round-badge">mine <b id="mineCount">0</b>/<b id="rosterTotal">15</b></span>
+  </header>
+
+  <div class="controls">
+    <input class="search" id="search" type="search" placeholder="filter by name…" autocomplete="off">
+    <div class="filters" id="filters">
+      <button class="fbtn f-all" data-pos="ALL" aria-pressed="true">All</button>
+      <button class="fbtn f-F" data-pos="Forward" aria-pressed="false">F</button>
+      <button class="fbtn f-M" data-pos="Midfielder" aria-pressed="false">M</button>
+      <button class="fbtn f-D" data-pos="Defender" aria-pressed="false">D</button>
+      <button class="fbtn f-G" data-pos="Goalkeeper" aria-pressed="false">G</button>
+    </div>
+    <label class="toggle-taken"><input type="checkbox" id="hideTaken">hide taken</label>
+  </div>
+
+  <div class="wrap">
+    <div class="board">
+      <table>
+        <thead><tr>
+          <th class="num sortable" data-sort="rank">#</th>
+          <th class="sortable" data-sort="name">Player</th>
+          <th>Pos</th>
+          <th>Team</th>
+          <th class="num sortable" data-sort="priority">Priority</th>
+          <th class="num sortable" data-sort="vorp">VORP</th>
+          <th class="num sortable" data-sort="xfpl">xFPL</th>
+          <th class="num sortable" data-sort="ppg">PPG</th>
+          <th class="num sortable" data-sort="psig">PreSig</th>
+          <th class="num sortable" data-sort="psmin">PreMin</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <aside class="side">
+      <h2>My roster needs</h2>
+      <div class="needs" id="needs"></div>
+
+      <h2>Best available by need</h2>
+      <div class="best-list" id="bestList"></div>
+
+      <h2>My team</h2>
+      <div class="my-team" id="myTeam"></div>
+
+      <p class="side-note">
+        Priority = VORP × how much you still need that position.
+        Fill a position and its players sink automatically.
+        Green priority = need-boosted, grey = deprioritised.
+      </p>
+      <button class="reset" id="resetBtn">Reset draft</button>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- roster requirements (your league) ----
+  const NEED = { Forward:3, Midfielder:5, Defender:5, Goalkeeper:2 };
+  const POS_SHORT = { Forward:"F", Midfielder:"M", Defender:"D", Goalkeeper:"G" };
+  const POS_ORDER = ["Forward","Midfielder","Defender","Goalkeeper"];
+
+  let players = [];         // {rank,name,pos,team,vorp,taken,mine}
+  let history = [];         // stack of {player, prevTaken, prevMine} for undo
+  let filterPos = "ALL";
+  let searchTerm = "";
+  let hideTaken = false;
+  let sortKey = "priority";   // default sort
+  let sortAsc = false;
+
+  // ---------- CSV parsing (tolerant: comma or tab) ----------
+  function parseCSV(text){
+    text = text.replace(/\r/g,"").trim();
+    if(!text) throw new Error("Empty input.");
+    const lines = text.split("\n").filter(l=>l.trim()!=="");
+    const delim = lines[0].includes("\t") ? "\t" : ",";
+    const head = splitRow(lines[0], delim).map(h=>h.trim().toLowerCase());
+    const idx = {
+      name: findCol(head, ["web_name","name","player"]),
+      pos:  findCol(head, ["position","pos"]),
+      team: findCol(head, ["team","team_name","short_name"]),
+      vorp: findCol(head, ["overall_vorp","vorp","overall_expected_return","priority"]),
+      rank: findCol(head, ["rank","#"]),
+      xfpl: findCol(head, ["x_fpl_p90","xfpl","x_fpl"]),
+      ppg:  findCol(head, ["points_per_game","ppg","points_per_gam"]),
+      psig: findCol(head, ["preseason_signal","preseason","psig"]),
+      psmin:findCol(head, ["ps_minutes","psmin","preseason_minutes"])
+    };
+    if(idx.name<0) throw new Error("Couldn't find a name column (web_name / name / player).");
+    if(idx.pos<0)  throw new Error("Couldn't find a position column.");
+    const out = [];
+    for(let i=1;i<lines.length;i++){
+      const c = splitRow(lines[i], delim);
+      const name = (c[idx.name]||"").trim();
+      let pos = (c[idx.pos]||"").trim();
+      if(!name) continue;
+      pos = normPos(pos);
+      if(!pos) continue;
+      out.push({
+        rank: idx.rank>=0 ? (parseInt(c[idx.rank])||out.length+1) : out.length+1,
+        name,
+        pos,
+        team: idx.team>=0 ? (c[idx.team]||"").trim() : "",
+        vorp: idx.vorp>=0 ? (parseFloat(c[idx.vorp])||0) : 0,
+        xfpl: idx.xfpl>=0 ? (parseFloat(c[idx.xfpl])||0) : null,
+        ppg:  idx.ppg>=0  ? (parseFloat(c[idx.ppg])||0)  : null,
+        psig: idx.psig>=0 ? (parseFloat(c[idx.psig])||0) : null,
+        psmin:idx.psmin>=0? (parseFloat(c[idx.psmin])||0): null,
+        taken:false, mine:false
+      });
+    }
+    if(!out.length) throw new Error("No player rows parsed. Check the format.");
+    return out;
+  }
+  function splitRow(line, delim){
+    // simple split; board data has no quoted commas in these fields
+    if(delim==="\t") return line.split("\t");
+    // handle possible quoted fields defensively
+    const res=[]; let cur="", q=false;
+    for(const ch of line){
+      if(ch==='"'){q=!q; continue;}
+      if(ch===',' && !q){res.push(cur); cur=""; continue;}
+      cur+=ch;
+    }
+    res.push(cur); return res;
+  }
+  function findCol(head, names){
+    for(const n of names){ const i=head.indexOf(n); if(i>=0) return i; }
+    return -1;
+  }
+  function normPos(p){
+    const s=p.toLowerCase();
+    if(s.startsWith("forward")||s==="fwd"||s==="f") return "Forward";
+    if(s.startsWith("mid")||s==="m") return "Midfielder";
+    if(s.startsWith("def")||s==="d") return "Defender";
+    if(s.startsWith("goal")||s==="gk"||s==="g") return "Goalkeeper";
+    return "";
+  }
+
+  // ---------- need multiplier ----------
+  function filledCount(pos){ return players.filter(p=>p.mine && p.pos===pos).length; }
+  function needMult(pos){
+    const need = NEED[pos]||1;
+    const filled = filledCount(pos);
+    return Math.max(0, (need - filled) / need);
+  }
+  function priority(p){
+    if(p.taken || p.mine) return -Infinity;
+    return p.vorp * needMult(p.pos);
+  }
+
+  // ---------- render ----------
+  const rowsEl = document.getElementById("rows");
+  function render(){
+    const mult = {}; POS_ORDER.forEach(pos=>mult[pos]=needMult(pos));
+    // value accessor for the active sort column
+    function sortVal(p){
+      switch(sortKey){
+        case "name":     return p.name.toLowerCase();
+        case "rank":     return p.rank;
+        case "vorp":     return p.vorp;
+        case "xfpl":     return p.xfpl==null?-Infinity:p.xfpl;
+        case "ppg":      return p.ppg==null?-Infinity:p.ppg;
+        case "psig":     return p.psig==null?-Infinity:p.psig;
+        case "psmin":    return p.psmin==null?-Infinity:p.psmin;
+        case "priority":
+        default:         return p.vorp*mult[p.pos];
+      }
+    }
+    // taken/mine always sink to bottom; among active players, sort by chosen key
+    const view = players.slice().sort((a,b)=>{
+      const ga=(a.taken||a.mine)?1:0, gb=(b.taken||b.mine)?1:0;
+      if(ga!==gb) return ga-gb;                 // active first, taken sink
+      let va=sortVal(a), vb=sortVal(b);
+      let cmp;
+      if(typeof va==="string") cmp=va.localeCompare(vb);
+      else cmp = va<vb ? -1 : va>vb ? 1 : 0;
+      if(sortAsc===false) cmp=-cmp;             // desc default
+      if(cmp!==0) return cmp;
+      return a.rank-b.rank;                       // stable tiebreak
+    });
+    const frag=document.createDocumentFragment();
+    let shown=0;
+    for(const p of view){
+      if(filterPos!=="ALL" && p.pos!==filterPos) continue;
+      if(searchTerm && !p.name.toLowerCase().includes(searchTerm)) continue;
+      if(hideTaken && (p.taken||p.mine)) continue;
+      shown++;
+      const short=POS_SHORT[p.pos];
+      const tr=document.createElement("tr");
+      tr.className=(p.mine?"mine":"")+(p.taken?" taken":"");
+      const prio = (p.taken||p.mine) ? "—" : (p.vorp*mult[p.pos]).toFixed(2);
+      const prioClass = (p.taken||p.mine) ? "" :
+        (mult[p.pos]<1 ? "deboosted" : "");
+      tr.innerHTML =
+        `<td class="rank num">${p.rank}</td>`+
+        `<td><span class="pname">${esc(p.name)}</span></td>`+
+        `<td><span class="pos-chip pos-${short}">${short}</span></td>`+
+        `<td><span class="team">${esc(p.team)}</span></td>`+
+        `<td class="num prio ${prioClass}">${prio}</td>`+
+        `<td class="num vorp">${p.vorp.toFixed(2)}</td>`+
+        `<td class="num vorp">${p.xfpl!=null?p.xfpl.toFixed(2):"—"}</td>`+
+        `<td class="num vorp">${p.ppg!=null?p.ppg.toFixed(1):"—"}</td>`+
+        `<td class="num vorp">${p.psig!=null?p.psig.toFixed(2):"—"}</td>`+
+        `<td class="num vorp">${p.psmin!=null?Math.round(p.psmin):"—"}</td>`+
+        `<td><div class="acts">`+
+          `<button class="abtn act-mine" data-act="mine">mine</button>`+
+          `<button class="abtn act-taken" data-act="taken">taken</button>`+
+        `</div></td>`;
+      tr._p=p;
+      frag.appendChild(tr);
+    }
+    rowsEl.innerHTML="";
+    rowsEl.appendChild(frag);
+    if(!shown){
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td colspan="11" style="padding:24px;text-align:center;color:var(--ink-faint);font-family:var(--mono)">No players match. Clear the filter or search.</td>`;
+      rowsEl.appendChild(tr);
+    }
+    renderSide(mult);
+  }
+
+  function renderSide(mult){
+    // needs bars
+    const nEl=document.getElementById("needs");
+    nEl.innerHTML="";
+    for(const pos of POS_ORDER){
+      const short=POS_SHORT[pos], filled=filledCount(pos), need=NEED[pos];
+      const pct = Math.min(100, (filled/need)*100);
+      const full = filled>=need;
+      const row=document.createElement("div");
+      row.className="need-row";
+      row.innerHTML=
+        `<span class="need-label ${short}">${short}</span>`+
+        `<div class="need-bar"><div class="need-fill ${short}" style="width:${pct}%"></div></div>`+
+        `<span class="need-count ${full?'full':''}">${filled}/${need}</span>`;
+      nEl.appendChild(row);
+    }
+    // best available per position (that you still need)
+    const bEl=document.getElementById("bestList");
+    bEl.innerHTML="";
+    for(const pos of POS_ORDER){
+      if(mult[pos]<=0) continue; // filled — skip
+      const best=players
+        .filter(p=>!p.taken && !p.mine && p.pos===pos)
+        .sort((a,b)=>b.vorp*mult[pos]-a.vorp*mult[pos])[0];
+      if(!best) continue;
+      const short=POS_SHORT[pos];
+      const item=document.createElement("div");
+      item.className="best-item";
+      item.innerHTML=
+        `<span class="bi-pos pos-${short}" style="background:none;padding:0">${short}</span>`+
+        `<span class="bi-name">${esc(best.name)}</span>`+
+        `<span class="bi-prio">${(best.vorp*mult[pos]).toFixed(2)}</span>`;
+      item.title="Click to mark as your pick";
+      item.onclick=()=>{ pushHistory(best); best.mine=true; sync(); };
+      bEl.appendChild(item);
+    }
+    // my team — grouped by position, click to un-pick
+    const mtEl=document.getElementById("myTeam");
+    mtEl.innerHTML="";
+    const myPicks=players.filter(p=>p.mine);
+    if(!myPicks.length){
+      mtEl.innerHTML=`<div class="mt-empty">No picks yet.</div>`;
+    } else {
+      for(const pos of POS_ORDER){
+        const grp=myPicks.filter(p=>p.pos===pos).sort((a,b)=>a.rank-b.rank);
+        if(!grp.length) continue;
+        const short=POS_SHORT[pos];
+        const g=document.createElement("div");
+        g.className="mt-group";
+        g.innerHTML=`<div class="mt-head ${short}">${pos.toUpperCase()} · ${grp.length}/${NEED[pos]}</div>`;
+        for(const p of grp){
+          const row=document.createElement("div");
+          row.className="mt-player";
+          row.innerHTML=`<span class="mt-name">${esc(p.name)}</span><span class="mt-team">${esc(p.team)}</span>`;
+          row.title="Click to remove from your team";
+          row.onclick=()=>{ pushHistory(p); p.mine=false; sync(); };
+          g.appendChild(row);
+        }
+        mtEl.appendChild(g);
+      }
+    }
+    // counters
+    const mine=players.filter(p=>p.mine).length;
+    const taken=players.filter(p=>p.taken||p.mine).length;
+    document.getElementById("pickCount").textContent=taken;
+    document.getElementById("mineCount").textContent=mine;
+  }
+
+  function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+  // ---------- events ----------
+  rowsEl.addEventListener("click",e=>{
+    const btn=e.target.closest("button[data-act]");
+    if(!btn) return;
+    const tr=e.target.closest("tr");
+    const p=tr._p; if(!p) return;
+    const act=btn.dataset.act;
+    pushHistory(p);
+    if(act==="mine"){ p.mine=!p.mine; if(p.mine) p.taken=false; }
+    else if(act==="taken"){ p.taken=!p.taken; if(p.taken) p.mine=false; }
+    sync();
+  });
+
+  function pushHistory(p){
+    history.push({player:p, prevTaken:p.taken, prevMine:p.mine});
+    if(history.length>100) history.shift();  // cap
+  }
+  function undo(){
+    const last=history.pop();
+    if(!last) return;
+    last.player.taken=last.prevTaken;
+    last.player.mine=last.prevMine;
+    sync();
+  }
+
+  document.getElementById("search").addEventListener("input",e=>{
+    searchTerm=e.target.value.toLowerCase().trim(); render();
+  });
+  document.getElementById("filters").addEventListener("click",e=>{
+    const b=e.target.closest(".fbtn"); if(!b) return;
+    filterPos=b.dataset.pos;
+    document.querySelectorAll(".fbtn").forEach(x=>x.setAttribute("aria-pressed", x===b));
+    render();
+  });
+  document.getElementById("hideTaken").addEventListener("change",e=>{
+    hideTaken=e.target.checked; render();
+  });
+  document.getElementById("resetBtn").addEventListener("click",()=>{
+    if(!confirm("Clear all taken / mine marks?")) return;
+    players.forEach(p=>{p.taken=false;p.mine=false;}); history=[]; sync();
+  });
+  document.getElementById("undoBtn").addEventListener("click",undo);
+
+  // click-to-sort headers
+  document.querySelectorAll("th.sortable").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const key=th.dataset.sort;
+      if(sortKey===key){ sortAsc=!sortAsc; }      // toggle direction
+      else { sortKey=key; sortAsc = (key==="name"); } // name defaults A→Z, numbers high→low
+      document.querySelectorAll("th.sortable").forEach(h=>{
+        h.classList.toggle("sort-active", h===th);
+        h.classList.toggle("asc", h===th && sortAsc);
+      });
+      render();
+    });
+  });
+
+  function sync(){
+    save(); render();
+    document.getElementById("undoBtn").disabled = history.length===0;
+  }
+
+  // ---------- persistence (in-memory + optional localStorage guarded) ----------
+  function save(){
+    try{
+      const state=players.map(p=>({n:p.name,t:p.taken,m:p.mine}));
+      localStorage.setItem("footmoney_draft_state", JSON.stringify(state));
+    }catch(_){}
+  }
+  function loadState(){
+    try{
+      const raw=localStorage.getItem("footmoney_draft_state");
+      if(!raw) return;
+      const state=JSON.parse(raw);
+      const byName={}; state.forEach(s=>byName[s.n]=s);
+      players.forEach(p=>{ const s=byName[p.name]; if(s){p.taken=s.t;p.mine=s.m;} });
+    }catch(_){}
+  }
+
+  // ---------- boot ----------
+  function start(data){
+    players=data;
+    loadState();
+    document.getElementById("rosterTotal").textContent=Object.values(NEED).reduce((a,b)=>a+b,0);
+    document.getElementById("loader").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    const defTh=document.querySelector('th[data-sort="priority"]');
+    if(defTh) defTh.classList.add("sort-active");
+    render();
+  }
+
+  document.getElementById("loadBtn").addEventListener("click",()=>{
+    const err=document.getElementById("loadErr"); err.textContent="";
+    try{ start(parseCSV(document.getElementById("csvInput").value)); }
+    catch(ex){ err.textContent=ex.message; }
+  });
+  document.getElementById("fileInput").addEventListener("change",e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ document.getElementById("csvInput").value=r.result; };
+    r.readAsText(f);
+  });
+  document.getElementById("demoBtn").addEventListener("click",()=>{
+    document.getElementById("csvInput").value=SAMPLE;
+    start(parseCSV(SAMPLE));
+  });
+
+  const SAMPLE=
+`rank,web_name,position,team,overall_VORP,x_fpl_p90,points_per_game
+1,Haaland,Forward,MCI,1.73,5.85,6.8
+2,Gabriel,Defender,ARS,1.66,6.44,6.7
+3,B.Fernandes,Midfielder,MUN,1.36,6.20,6.5
+4,João Pedro,Forward,CHE,1.00,4.88,5.2
+5,Thiago,Forward,BRE,0.97,5.42,4.8
+6,Guéhi,Defender,MCI,0.97,5.42,5.1
+7,Isak,Forward,LIV,0.90,4.50,4.9
+8,Palmer,Midfielder,CHE,0.88,5.80,4.2
+9,Rice,Midfielder,ARS,0.79,5.33,5.1
+10,O'Reilly,Defender,MCI,0.78,5.89,4.7
+11,Virgil,Defender,LIV,0.77,4.99,4.7
+12,Saka,Midfielder,ARS,0.73,5.91,5.1
+13,Bruno G.,Midfielder,ARS,0.71,5.12,3.85
+14,Semenyo,Midfielder,MCI,0.65,5.23,5.4
+15,Enzo,Midfielder,CHE,0.63,4.90,4.1
+16,Raya,Goalkeeper,ARS,0.60,4.72,4.4
+17,Calafiori,Defender,ARS,0.58,6.55,4.3
+18,Szoboszlai,Midfielder,LIV,0.55,4.60,4.3
+19,Watkins,Forward,AVL,0.52,4.41,4.3
+20,Tarkowski,Defender,EVE,0.48,5.09,4.6
+21,Donnarumma,Goalkeeper,MCI,0.42,4.40,4.0
+22,Gyökeres,Forward,ARS,0.40,4.62,3.6
+23,Gibbs-White,Midfielder,NFO,0.38,4.94,5.0
+24,Muñoz,Defender,CRY,0.36,5.12,4.8
+25,Sels,Goalkeeper,NFO,0.30,4.20,3.9`;
+
+})();
+</script>
+</body>
+</html>
