@@ -21,13 +21,16 @@ def scrape_elo():
     assert out["elo"].notna().all(), out.loc[out["elo"].isna(), "name"].tolist()
     return out[["code", "elo"]]
 
-elo_df = scrape_elo()
-
 def update_elo_history(gw, max_age_days=6):
     hist = pd.read_csv(HISTORY, parse_dates=["date"]) if HISTORY.exists() else pd.DataFrame(columns=["date", "gw", "code", "elo"])
     if len(hist) and (pd.Timestamp.today() - hist["date"].max()).days < max_age_days:
         return hist
-    snap = scrape_elo().assign(date=pd.Timestamp.today().normalize(), gw=gw)
+    try:
+        snap = scrape_elo().assign(date=pd.Timestamp.today().normalize(), gw=gw)
+    except requests.RequestException:
+        if len(hist):
+            return hist        # clubelo unreachable: use the last saved snapshot
+        raise                  # first run with no history: nothing to fall back on
     HISTORY.parent.mkdir(exist_ok=True)
     pd.concat([hist, snap[["date", "gw", "code", "elo"]]]).to_csv(HISTORY, index=False)
     return pd.read_csv(HISTORY, parse_dates=["date"])

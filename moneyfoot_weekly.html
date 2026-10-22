@@ -19,6 +19,9 @@
     /* positions — kept as a distinct categorical set, retuned to sit on petrol */
     --fwd:#e8896f; --mid:#6bce8a; --def:#63a8e0; --gk:#e8b84b;
 
+    /* selection */
+    --select:rgba(236,226,198,.45);
+
     /* type */
     --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
     --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -52,7 +55,7 @@
   .chip[aria-pressed="true"]{color:#1a1608;font-weight:600}
   .chip.c-mine[aria-pressed="true"]{background:var(--mine);border-color:var(--mine)}
   .chip.c-avail[aria-pressed="true"]{background:var(--avail);border-color:var(--avail)}
-  .chip.c-pos[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+  .chip.c-pos[aria-pressed="true"]{background:var(--mine);border-color:var(--mine)}
   .chip.c-mid[aria-pressed="true"]{background:var(--mid);border-color:var(--mid)}
   .chip:hover:not([aria-pressed="true"]){color:var(--ink);border-color:var(--ink-faint)}
   .posfilters{display:flex;gap:4px}
@@ -98,6 +101,9 @@
   .fxload input{position:absolute;inset:0;opacity:0;cursor:pointer}
   .wrap{padding-right:230px}   /* make room so table doesn't hide under panel */
   .hidden{display:none!important}
+  tr.is-selected td{box-shadow:inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
+  tr.is-selected td:first-child{box-shadow:inset 1px 0 0 var(--select),inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
+  tr.is-selected td:last-child{box-shadow:inset -1px 0 0 var(--select),inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
 </style>
 </head>
 <body>
@@ -132,7 +138,7 @@
     </div>
     <button class="chip c-mine" id="onlyMine" aria-pressed="false">My squad</button>
     <button class="chip c-avail" id="onlyAvail" aria-pressed="false">Available</button>
-    <button class="chip c-avail" id="onlyStarters" aria-pressed="false">70+ min/gw</button>
+    <button class="chip c-avail" id="onlyStarters" aria-pressed="false">60+ min/gw</button>
     <button class="chip c-mid" id="completeMid" aria-pressed="false">Complete mid</button>
     <button class="chip c-avail" id="buyLow" aria-pressed="false">Buy low</button>
     <button class="chip c-mine" id="sellHigh" aria-pressed="false">Sell high</button>
@@ -153,8 +159,9 @@
         <th class="num sortable" data-sort="defcon_p90">DEF/90</th>
         <th class="num sortable" data-sort="xgi_p90">xGI/90</th>
         <th class="num sortable" data-sort="bps_GW">BPS/GW</th>
-        <th class="num sortable" data-sort="last_points_per_game">PPG26</th>
+        <th class="num sortable" data-sort="form_score_scaled">FORM</th>
         <th class="num sortable" data-sort="fixture_score_100">FIX</th>
+        <th class="num sortable" data-sort="last_points_per_game">PPG26</th>
         <th class="num sortable" data-sort="team_score">TM</th>
       </tr></thead>
       <tbody id="rows"></tbody>
@@ -170,11 +177,12 @@
 <script>
 (function(){
   "use strict";
-  const NCOLS=15;   // keep in sync with header/row cell count (for empty-state colspan)
+  const NCOLS=16;   // keep in sync with header/row cell count (for empty-state colspan)
   let rows=[], leagues=[], activeLeague=null;
   let filterPos="ALL", searchTerm="", onlyMine=false, onlyAvail=false, onlyStarters=false, completeMid=false, filterTeam="ALL";
   let sortKey="weekly_VORP", sortAsc=false;
   let buyLowMode=false, sellHighMode=false;
+  let selected=null;
 
   function parseCSV(text){
     text=text.replace(/\r/g,"").trim();
@@ -213,6 +221,13 @@
   }
 
   const rowsEl=document.getElementById("rows");
+  rowsEl.addEventListener("click",e=>{
+    const tr=e.target.closest("tr");
+    if(!tr||!tr.dataset.key)return;
+    selected=(selected===tr.dataset.key)?null:tr.dataset.key;
+    rowsEl.querySelectorAll("tr.is-selected").forEach(x=>x.classList.remove("is-selected"));
+    if(selected)tr.classList.add("is-selected");
+  });
   function render(){
     const mineCol=`mine_${activeLeague}`, availCol=`available_${activeLeague}`;
     const view=rows.slice().sort((a,b)=>{
@@ -229,14 +244,13 @@
       if(filterPos!=="ALL"&&norm(r.position)!==filterPos)continue;
       if(filterTeam!=="ALL"&&norm(r.team_name||r.team)!==filterTeam)continue;
       if(searchTerm&&!norm(r.web_name).toLowerCase().includes(searchTerm))continue;
-      if(onlyMine&&!mine)continue;
-      if(onlyAvail&&!avail)continue;
-      if(onlyStarters&&numOr(r.mins_per_gw,0)<70)continue;
+      if((onlyMine||onlyAvail)&&!((onlyMine&&mine)||(onlyAvail&&avail)))continue;
+      if(onlyStarters&&numOr(r.mins_per_gw,0)<60)continue;
       if(completeMid&&!(
         norm(r.position)==="Midfielder" &&
         numOr(r.defcon_p90,0)>0.8 &&
         numOr(r.xgi_p90,0)>0.2 &&
-        numOr(r.mins_per_gw,0)>=70
+        numOr(r.mins_per_gw,0)>=60
       ))continue;
       if(buyLowMode && numOr(r.buy_low,0) < 0.5) continue;
       if(sellHighMode && numOr(r.sell_high,0) < 0.5) continue;
@@ -244,6 +258,9 @@
       const sh=posShort(r.position);
       const tr=document.createElement("tr");
       tr.className=mine?"is-mine":avail?"is-avail":"is-taken";
+      const key=norm(r.web_name)+"|"+norm(r.team_name||r.team||"");
+      tr.dataset.key=key;
+      if(key===selected)tr.classList.add("is-selected");
       tr.innerHTML=
         `<td class="rank num">${norm(r.rank)||""}</td>`+
         `<td><span class="pname">${esc(r.web_name)}</span></td>`+
@@ -257,8 +274,9 @@
         `<td class="num val">${fmt(r.defcon_p90,2)}</td>`+
         `<td class="num val">${fmt(r.xgi_p90,2)}</td>`+
         `<td class="num val">${fmt(r.bps_GW,2)}</td>`+
-        `<td class="num val">${fmt(r.last_points_per_game,2)}</td>`+
+        `<td class="num val">${fmt(r.form_score_scaled,2)}</td>`+
         `<td class="num val">${fmt(r.fixture_score_100,0)}</td>`+
+        `<td class="num val">${fmt(r.last_points_per_game,2)}</td>`+
         `<td class="num val">${fmt(r.team_score,0)}</td>`
 
       frag.appendChild(tr);
@@ -305,8 +323,8 @@
     document.querySelectorAll("#posfilters .chip").forEach(x=>x.setAttribute("aria-pressed",x===b));
     render();
   });
-  toggle("onlyMine",el=>{onlyMine=!onlyMine;if(onlyMine){onlyAvail=false;document.getElementById("onlyAvail").setAttribute("aria-pressed",false);}el.setAttribute("aria-pressed",onlyMine);});
-  toggle("onlyAvail",el=>{onlyAvail=!onlyAvail;if(onlyAvail){onlyMine=false;document.getElementById("onlyMine").setAttribute("aria-pressed",false);}el.setAttribute("aria-pressed",onlyAvail);});
+  toggle("onlyMine",el=>{onlyMine=!onlyMine;el.setAttribute("aria-pressed",onlyMine);});
+  toggle("onlyAvail",el=>{onlyAvail=!onlyAvail;el.setAttribute("aria-pressed",onlyAvail);});
   toggle("onlyStarters",el=>{onlyStarters=!onlyStarters;el.setAttribute("aria-pressed",onlyStarters);});
   toggle("completeMid",el=>{completeMid=!completeMid;el.setAttribute("aria-pressed",completeMid);});
     document.getElementById("teamSelect").addEventListener("change",e=>{
