@@ -2,10 +2,8 @@ from pathlib import Path
 from io import StringIO
 import argparse
 import pandas as pd
-from bs4 import BeautifulSoup
 import requests
 import os
-from playwright.sync_api import sync_playwright
 
 HISTORY = Path("data/elo_history.csv")
 HISTORY_COLUMNS = ["date", "gw", "code", "elo"]
@@ -18,6 +16,10 @@ FPL_DATA_FOLDER = os.path.expanduser('~/MyProjects/FPL/FPL-Elo-Insights/data/202
 teams = pd.read_csv(f"{FPL_DATA_FOLDER}/teams.csv",encoding="utf-8")
 
 def scrape_elo():
+    # Imported here so the pipeline runs without playwright/bs4 installed.
+    from bs4 import BeautifulSoup
+    from playwright.sync_api import sync_playwright
+
     with sync_playwright() as p:
         browser = p.firefox()  # Or p.chromium()
         page = browser.new_page()

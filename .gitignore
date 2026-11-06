@@ -9,8 +9,12 @@ __pycache__/
 *.csv
 !data/elo_*.csv
 *.xlsx
+!seasons/**/*.xlsx
+._*
 .env
 *.log
 reformatted_pipe.backup.ipynb
 reference/
 node_modules/
+package.json
+package-lock.json
