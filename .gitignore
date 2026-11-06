@@ -10,3 +10,6 @@ __pycache__/
 *.xlsx
 .env
 *.log
+reformatted_pipe.backup.ipynb
+reference/
+node_modules/
