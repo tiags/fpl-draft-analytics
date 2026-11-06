@@ -6,8 +6,8 @@ LEAGUES = {
         "league_id": 13175,
         "league_size": 15,
         "format": "classic",
-        "known_taken": {557, 565, 572, 579},   # Gegen: owned by others (Tzolis, M.Sangaré, Tzolakis, Araujo)
-        "known_mine":  {605},
+        "known_taken": {557, 565, 572, 579, 82, 181, 659, 561, 408, 374, 634, 174, 650, 567, 93, 639},  
+        "known_mine":  {452, 560},
         "known_available": {608}    
     },
     "highs_and_dalots": {
@@ -16,8 +16,8 @@ LEAGUES = {
         "league_id": 6544,
         "league_size": 8,
         "format": "h2h",
-        "known_taken": {557, 565, 572, 605},   # Dalot: owned by others (Tzolis, M.Sangaré, Tzolakis, Yalcoye)
-        "known_mine": set(),
+        "known_taken": {557, 565, 572, 605, 567}, 
+        "known_mine": {650},
         "known_available": {608}    
     },
 }
