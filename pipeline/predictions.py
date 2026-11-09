@@ -1,5 +1,5 @@
-"""Cell 8 (shared train/test build) + cell 9 (POISSON REGRESSION)."""
 import pandas as pd
+import numpy as np
 import statsmodels.api as sm
 
 COLS_ORDER = ["home_team_name", "pred_home_goals", "pred_away_goals", "away_team_name",
@@ -38,20 +38,31 @@ def build_train_test(played, prev_played, GW, features=("elo_context",)):
     print(train.shape, train.groupby("season").size())
     return train, test, FEATURES
 
+def stack_home_and_away(match_frame, FEATURES):
+    # each match becomes two rows; FEATURES must be home-minus-away differences, so the away row flips the sign
+    home_rows = match_frame[FEATURES].assign(team_xg=match_frame["home_non_penalty_xg"], is_home=1)
+    away_rows = (-match_frame[FEATURES]).assign(team_xg=match_frame["away_non_penalty_xg"], is_home=0)
+    return pd.concat([home_rows, away_rows], ignore_index=True)
 
-def fit_goal_models(train, FEATURES):
-    Xtr = sm.add_constant(train[FEATURES])
-    pois_home = sm.GLM(train["home_non_penalty_xg"], Xtr, family=sm.families.Poisson()).fit()
-    pois_away = sm.GLM(train["away_non_penalty_xg"], Xtr, family=sm.families.Poisson()).fit()
-    return pois_home, pois_away
+
+def fit_pooled_goal_model(train, FEATURES):
+    stacked_train = stack_home_and_away(train, FEATURES)
+    pooled_features = FEATURES + ["is_home"]
+    pooled_model = sm.GLM(stacked_train["team_xg"],
+                          sm.add_constant(stacked_train[pooled_features]),
+                          family=sm.families.Poisson()).fit()
+    print("pooled home advantage:", round(float(np.exp(pooled_model.params["is_home"])), 3))
+    return pooled_model
 
 
-def predict_fixtures(test, train, pois_home, pois_away, FEATURES, teams,
+def predict_fixtures(test, train, pooled_model, FEATURES, teams,
                      output_path="predicted_fixtures_GW.csv"):
-    Xte = sm.add_constant(test[FEATURES], has_constant="add")
+    pooled_features = FEATURES + ["is_home"]
+    home_design = sm.add_constant(test[FEATURES].assign(is_home=1)[pooled_features], has_constant="add")
+    away_design = sm.add_constant((-test[FEATURES]).assign(is_home=0)[pooled_features], has_constant="add")
 
-    test["pred_home_goals"] = pois_home.predict(Xte).values
-    test["pred_away_goals"] = pois_away.predict(Xte).values
+    test["pred_home_goals"] = pooled_model.predict(home_design).values
+    test["pred_away_goals"] = pooled_model.predict(away_design).values
     test["pred_goal_diff"]  = test["pred_home_goals"] - test["pred_away_goals"]
 
     mu_home = train["home_non_penalty_xg"].mean()      # league averages, for the normalization below
