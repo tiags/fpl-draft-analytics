@@ -18,3 +18,5 @@ reference/
 node_modules/
 package.json
 package-lock.json
+host.py
+misc/
