@@ -104,6 +104,15 @@
   tr.is-selected td{box-shadow:inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
   tr.is-selected td:first-child{box-shadow:inset 1px 0 0 var(--select),inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
   tr.is-selected td:last-child{box-shadow:inset -1px 0 0 var(--select),inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
+  @media (max-width:760px){
+    header,.controls{position:static}            /* stop the top half staying pinned */
+    thead th{top:0}
+    .wrap{padding-right:22px;overflow-x:auto}    /* table scrolls sideways instead of being cut */
+    #app{display:flex;flex-direction:column}
+    header{order:-2}
+    .fxpanel{order:-1;position:static;width:auto;height:auto;
+             border-left:none;border-bottom:1px solid var(--line)}   /* predictions sit under the header */
+  }
 </style>
 </head>
 <body>
