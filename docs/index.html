@@ -374,18 +374,27 @@
   });
   document.getElementById("reloadInput").addEventListener("change",e=>readFile(e.target));
 
+  function renderFixtures(text){
+    const {rows:fx}=parseCSV(text);
+    document.getElementById("fxrows").innerHTML=fx.map(x=>
+      `<div class="fxrow"><span><b>${esc(x.home_team_name)}</b> ${fmt(x.pred_home_goals,1)}</span>`+
+      `<span>${fmt(x.pred_away_goals,1)} <b>${esc(x.away_team_name)}</b></span></div>`
+    ).join("");
+  }
   document.getElementById("fxInput").addEventListener("change",e=>{
     const f=e.target.files[0];if(!f)return;
     const r=new FileReader();
-    r.onload=()=>{
-      const {rows:fx}=parseCSV(r.result);
-      document.getElementById("fxrows").innerHTML=fx.map(x=>
-        `<div class="fxrow"><span><b>${esc(x.home_team_name)}</b> ${fmt(x.pred_home_goals,1)}</span>`+
-        `<span>${fmt(x.pred_away_goals,1)} <b>${esc(x.away_team_name)}</b></span></div>`
-      ).join("");
-    };
+    r.onload=()=>renderFixtures(r.result);
     r.readAsText(f);e.target.value="";
   });
+  function fetchCsv(path){
+    return fetch(path,{cache:"no-store"}).then(response=>{
+      if(!response.ok)throw new Error(path+" not found");
+      return response.text();
+    });
+  }
+  fetchCsv("data/weekly_board_enriched.csv").then(loadText).catch(()=>{});
+  fetchCsv("data/predicted_fixtures_GW.csv").then(renderFixtures).catch(()=>{});
 })();
 </script>
 </body>

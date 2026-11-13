@@ -1,0 +1,11 @@
+home_team_name,pred_home_goals,pred_away_goals,away_team_name,pred_total_goals,pred_goal_diff,attack_diff,home_attack_fixture,away_defence_fixture,away_attack_fixture,home_defence_fixture,home_weighted_attack,away_weighted_defence,away_weighted_attack,home_weighted_defence,set_play_diff,open_play_diff,home_weighted_set_play_strength,home_weighted_open_play_strength,home_weighted_set_play_defence,home_weighted_open_play_defence,away_weighted_set_play_strength,away_weighted_open_play_strength,away_weighted_set_play_defence,away_weighted_open_play_defence
+MCI,1.8,0.9,FUL,2.7,0.9,0.4,0.4,-0.4,-0.3,0.3,1.0,-0.6,0.7,-0.5,-0.1,0.8,0.4,1.7,-0.4,-0.7,0.3,1.1,-0.3,-0.9
+AVL,1.8,0.9,SUN,2.7,0.8,0.0,0.3,-0.3,-0.3,0.3,0.7,-0.9,0.6,-0.9,-0.1,-0.1,0.4,0.9,-0.4,-1.4,0.4,0.8,-0.3,-1.2
+COV,1.2,1.3,CRY,2.6,-0.1,0.2,-0.2,0.2,0.1,-0.1,0.5,-1.1,0.6,-0.8,0.5,0.0,0.2,0.6,-0.2,-1.1,0.4,0.9,-0.9,-1.4
+BOU,1.6,1.0,NFO,2.6,0.6,0.4,0.2,-0.2,-0.1,0.1,1.0,-0.6,0.7,-0.5,0.1,0.5,0.4,1.5,-0.2,-0.7,0.4,1.1,-0.3,-0.8
+TOT,1.7,1.0,IPS,2.7,0.6,0.6,0.2,-0.2,-0.2,0.2,0.7,-1.1,0.6,-0.6,0.2,0.9,0.4,0.9,-0.4,-0.7,0.1,0.9,-0.3,-1.6
+CHE,1.6,1.1,LEE,2.6,0.5,-0.0,0.1,-0.1,-0.1,0.1,0.7,-0.6,0.6,-0.7,-0.6,0.3,0.3,1.0,-0.5,-0.9,0.6,0.7,-0.3,-1.0
+NEW,1.1,1.5,ARS,2.6,-0.4,-0.5,-0.3,0.3,0.3,-0.3,0.6,-0.3,0.8,-0.6,-0.6,-0.6,0.2,1.0,-0.6,-0.9,0.3,1.1,-0.2,-0.5
+HUL,1.0,1.6,BHA,2.7,-0.6,-0.6,-0.4,0.4,0.5,-0.5,0.4,-0.6,0.8,-0.7,-0.0,-0.8,0.3,0.6,-0.2,-1.1,0.5,1.1,-0.5,-0.8
+LIV,1.6,1.0,MUN,2.6,0.5,0.1,0.1,-0.1,-0.1,0.1,0.7,-0.9,0.8,-0.7,0.7,-0.2,0.5,1.0,-0.2,-1.0,0.3,1.3,-0.6,-1.1
+BRE,1.5,1.1,EVE,2.6,0.3,-0.0,0.0,-0.0,-0.0,0.0,0.6,-0.7,0.7,-0.7,0.1,-0.1,0.4,0.8,-0.2,-1.0,0.4,0.9,-0.3,-1.1
