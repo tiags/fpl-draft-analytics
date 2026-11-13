@@ -45,7 +45,7 @@ def main():
     train, test, FEATURES = build_train_test(played, prev_played, GW)  
     
     pooled_model = fit_pooled_goal_model(train, FEATURES)
-    test, predictions = predict_fixtures(test, train, pooled_model, FEATURES, ctx.teams, output_path="predicted_fixtures_GW.csv")
+    test, predictions = predict_fixtures(test, train, pooled_model, FEATURES, ctx.teams, output_path="docs/data/predicted_fixtures_GW.csv")
     
     team_fx = build_team_fixture_scores(test)                          
     print(merged["player_id"].duplicated().sum())
@@ -56,7 +56,7 @@ def main():
     board = assemble_board(merged)                                     
     all_boards = build_all_boards(config.LEAGUES)                      
     enriched = enrich_and_export(board, all_boards, LAST_GW,           
-                                 output_path="weekly_board_enriched.csv")
+                                 output_path="docs/data/weekly_board_enriched.csv")
     print_player_debug(merged)
     return enriched
 
