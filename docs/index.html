@@ -306,6 +306,7 @@
     let mineCount=0,availCount=0;
     for(const r of rows){if(isTrue(r[mineCol]))mineCount++;if(isTrue(r[availCol]))availCount++;}
     document.getElementById("strip").innerHTML=
+      `<span class="stat">pre-GW <b>${Number(rows[0]?.gw)+1}</b></span>`+
       `<span class="stat gold">squad <b>${mineCount}</b></span>`+
       `<span class="stat green">available <b>${availCount}</b></span>`+
       `<span class="stat">showing <b>${rowsEl.children.length}</b></span>`;
