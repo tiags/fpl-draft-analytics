@@ -111,8 +111,9 @@
     .fxpanel{order:-1;position:static;width:auto;height:auto;
              border-left:none;border-bottom:1px solid var(--line);padding:10px 16px}   /* predictions sit under the header */
     .reload{display:none}   
-    #fxrows{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}   /* fixtures in two columns */
-    .fxrow{padding:4px 0}
+    #fxrows{display:grid;grid-template-columns:1fr 1fr}   /* fixtures in two columns */
+    .fxrow{padding:4px 0;justify-content:center;gap:14px}   /* home and away sit close together */
+    .fxrow:nth-child(odd){border-right:1px solid var(--line)}   /* divider between the two columns */
     .fxpanel h3{cursor:pointer;margin-bottom:0}
     .fxpanel h3::after{content:" ▸"}
     .fxpanel.open h3::after{content:" ▾"}
