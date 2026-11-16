@@ -97,29 +97,28 @@
   .fxpanel h3{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:10px}
   .fxrow{font-family:var(--mono);font-size:12px;color:var(--ink-dim);padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:6px}
   .fxrow b{color:var(--ink)}
-  .fxload{font-family:var(--mono);font-size:11px;color:var(--ink-dim);background:var(--bg);border:1px solid var(--line);padding:6px 10px;border-radius:6px;cursor:pointer;position:relative;overflow:hidden;margin-bottom:12px;display:inline-block}
-  .fxload input{position:absolute;inset:0;opacity:0;cursor:pointer}
   .wrap{padding-right:230px}   /* make room so table doesn't hide under panel */
   .hidden{display:none!important}
   tr.is-selected td{box-shadow:inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
   tr.is-selected td:first-child{box-shadow:inset 1px 0 0 var(--select),inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
   tr.is-selected td:last-child{box-shadow:inset -1px 0 0 var(--select),inset 0 1px 0 var(--select),inset 0 -1px 0 var(--select)}
   @media (max-width:760px){
-    header,.controls{position:static}            /* stop the top half staying pinned */
+    header,.controls{position:static}            
     thead th{top:0}
     .wrap{padding-right:22px;overflow-x:auto}    /* table scrolls sideways instead of being cut */
     #app{display:flex;flex-direction:column}
     header{order:-2}
+    .fxpanel{order:-1;position:static;width:auto;height:auto;
              border-left:none;border-bottom:1px solid var(--line);padding:10px 16px}   /* predictions sit under the header */
-    .fxload,.reload{display:none}                 /* file pickers are pointless for visitors */
+    .reload{display:none}   
     #fxrows{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}   /* fixtures in two columns */
     .fxrow{padding:4px 0}
     .fxpanel h3{cursor:pointer;margin-bottom:0}
     .fxpanel h3::after{content:" ▸"}
     .fxpanel.open h3::after{content:" ▾"}
     .fxpanel.open h3{margin-bottom:10px}
-    .fxpanel:not(.open) #fxrows{display:none} 
-    }
+    .fxpanel:not(.open) #fxrows{display:none}    /* collapsed until tapped */
+  }
 </style>
 </head>
 <body>
@@ -185,7 +184,6 @@
   </div>
   <aside class="fxpanel">
     <h3 id="fxToggle">GW Predictions</h3>
-    <span class="fxload">Load fixtures csv<input type="file" id="fxInput" accept=".csv,text/csv"></span>
     <div id="fxrows"></div>
   </aside>
 </div>
@@ -397,12 +395,6 @@
       `<span>${fmt(x.pred_away_goals,1)} <b>${esc(x.away_team_name)}</b></span></div>`
     ).join("");
   }
-  document.getElementById("fxInput").addEventListener("change",e=>{
-    const f=e.target.files[0];if(!f)return;
-    const r=new FileReader();
-    r.onload=()=>renderFixtures(r.result);
-    r.readAsText(f);e.target.value="";
-  });
   document.getElementById("fxToggle").addEventListener("click",()=>{
     document.querySelector(".fxpanel").classList.toggle("open");
   });
