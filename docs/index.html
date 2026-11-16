@@ -277,7 +277,7 @@
       tr.dataset.key=key;
       if(key===selected)tr.classList.add("is-selected");
       tr.innerHTML=
-        `<td class="rank num">${norm(r.rank)||""}</td>`+
+        `<td class="rank num">${shown}</td>`+
         `<td><span class="pname">${esc(r.web_name)}</span></td>`+
         `<td><span class="pos-chip pos-${sh}">${sh}</span></td>`+
         `<td><span class="team">${esc(r.team_name||r.team||"")}</span></td>`+
