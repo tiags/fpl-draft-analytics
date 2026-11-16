@@ -110,9 +110,16 @@
     .wrap{padding-right:22px;overflow-x:auto}    /* table scrolls sideways instead of being cut */
     #app{display:flex;flex-direction:column}
     header{order:-2}
-    .fxpanel{order:-1;position:static;width:auto;height:auto;
-             border-left:none;border-bottom:1px solid var(--line)}   /* predictions sit under the header */
-  }
+             border-left:none;border-bottom:1px solid var(--line);padding:10px 16px}   /* predictions sit under the header */
+    .fxload,.reload{display:none}                 /* file pickers are pointless for visitors */
+    #fxrows{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}   /* fixtures in two columns */
+    .fxrow{padding:4px 0}
+    .fxpanel h3{cursor:pointer;margin-bottom:0}
+    .fxpanel h3::after{content:" ▸"}
+    .fxpanel.open h3::after{content:" ▾"}
+    .fxpanel.open h3{margin-bottom:10px}
+    .fxpanel:not(.open) #fxrows{display:none} 
+    }
 </style>
 </head>
 <body>
@@ -177,7 +184,7 @@
     </table>
   </div>
   <aside class="fxpanel">
-    <h3>GW Predictions</h3>
+    <h3 id="fxToggle">GW Predictions</h3>
     <span class="fxload">Load fixtures csv<input type="file" id="fxInput" accept=".csv,text/csv"></span>
     <div id="fxrows"></div>
   </aside>
@@ -395,6 +402,9 @@
     const r=new FileReader();
     r.onload=()=>renderFixtures(r.result);
     r.readAsText(f);e.target.value="";
+  });
+  document.getElementById("fxToggle").addEventListener("click",()=>{
+    document.querySelector(".fxpanel").classList.toggle("open");
   });
   function fetchCsv(path){
     return fetch(path,{cache:"no-store"}).then(response=>{
