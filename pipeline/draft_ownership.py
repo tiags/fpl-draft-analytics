@@ -6,9 +6,6 @@ import config
 
 BASE_URL = "https://draft.premierleague.com/api"
 
-names = ["Tzolakis","M.Sangaré","Yalcouyé","Araujo","Tzolis"]
-
-
 def build_all_boards(leagues=None):
     if leagues is None:
         leagues = config.LEAGUES
@@ -37,6 +34,8 @@ def build_all_boards(leagues=None):
         # mine / taken first
         league_players.loc[league_players["player_id"].isin(mine_set),  "is_mine"] = True
         league_players.loc[league_players["player_id"].isin(taken_set), "is_taken"] = True
+        league_players.loc[league_players["player_id"].isin(taken_set), "is_mine"] = False  
+        league_players.loc[league_players["player_id"].isin(mine_set), "is_taken"] = False
         league_players.loc[league_players["player_id"].isin(mine_set | taken_set), "is_available"] = False
 
         # known_available LAST — fully reset to available, override everything
