@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236ba39b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 7a16 16 20 0 1 10.98 4.362'/><path d='M12 12a13 13 0 0 1-8.66 5'/><path d='M16.83 13.634a16 16 0 0 1-9.267 7.328'/><path d='M20.66 17A13 13 0 0 0 12 12a13 13 0 0 1 0-10'/><path d='M8.17 15.366a16 16 0 0 1-1.713-11.69'/><circle cx='12' cy='12' r='10'/></svg>">
-<title>MoneyFoot · Weekly Desk</title>
+<title>MoneyFoot · Weekly Board</title>
 <style>
 :root{
     /* base — petrol */
@@ -111,9 +111,8 @@
     .fxpanel{order:-1;position:static;width:auto;height:auto;
              border-left:none;border-bottom:1px solid var(--line);padding:10px 16px}   /* predictions sit under the header */
     .reload{display:none}   
-    #fxrows{display:grid;grid-template-columns:1fr 1fr}   /* fixtures in two columns */
-    .fxrow{padding:4px 0;justify-content:center;gap:14px}   /* home and away sit close together */
-    .fxrow:nth-child(odd){border-right:1px solid var(--line)}   /* divider between the two columns */
+    #fxrows{columns:2;column-gap:0;column-rule:1px solid var(--line)}   /* two columns, read top to bottom */
+    .fxrow{padding:4px 0;justify-content:center;gap:14px;break-inside:avoid}   /* home and away sit close together */
     .fxpanel h3{cursor:pointer;margin-bottom:0}
     .fxpanel h3::after{content:" ▸"}
     .fxpanel.open h3::after{content:" ▾"}
@@ -184,7 +183,7 @@
     </table>
   </div>
   <aside class="fxpanel">
-    <h3 id="fxToggle">GW Predictions</h3>
+    <h3 id="fxToggle">GW xG Predictions</h3>
     <div id="fxrows"></div>
   </aside>
 </div>
