@@ -45,11 +45,6 @@ def build_all_boards(leagues=None):
         league_players["is_mine"] = league_players["is_mine"].fillna(False).astype(bool)
         league_players["is_taken"] = league_players["is_taken"].fillna(False).astype(bool)
 
-        check = league_players[league_players["player_id"].isin({557,565,572,579,605,608})]
-        print(config.LEAGUES["gegenpressure"].keys())
-        print(league_name)
-        print(check[["player_id","is_mine","is_available","is_taken"]].to_string(index=False))
-
         flags = league_players[["player_id", "is_mine", "is_available", "is_taken"]].rename(columns={
             "is_mine":      f"mine_{league_name}",
             "is_available": f"available_{league_name}",
