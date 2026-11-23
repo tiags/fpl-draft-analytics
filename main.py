@@ -63,6 +63,5 @@ def main():
     print_player_debug(merged)
     return enriched
 
-
 if __name__ == "__main__":
     main()

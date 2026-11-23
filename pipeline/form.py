@@ -1,4 +1,4 @@
-"""Cell 4: FORM SCORE."""
+"""FORM SCORE."""
 import os
 
 import pandas as pd

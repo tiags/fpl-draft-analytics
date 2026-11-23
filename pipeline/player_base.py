@@ -1,4 +1,4 @@
-"""Cell 3: PLAYER STATS BASE — playerstats + players + teams merge, transferred-out filter."""
+"""PLAYER STATS BASE — playerstats + players + teams merge, transferred-out filter."""
 
 TRANSFERRED_OUT = {"Woltemade", "Beto", "Sánchez", "Richarlison"}
 

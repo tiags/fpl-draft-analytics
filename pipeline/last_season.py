@@ -1,4 +1,4 @@
-"""Cell 13: LAST SEASON'S STATS."""
+"""LAST SEASON'S STATS."""
 
 # Columns to bring from last year
 LAST_SEASON_COLS = [

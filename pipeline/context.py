@@ -1,4 +1,4 @@
-"""Cell 1: git pull, GW state, raw data loads, elo history."""
+"""git pull, GW state, raw data loads, elo history."""
 import os
 import subprocess
 from types import SimpleNamespace

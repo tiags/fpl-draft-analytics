@@ -1,4 +1,4 @@
-"""Cell 18: draft-league ownership flags per league."""
+"""draft-league ownership flags per league."""
 import pandas as pd
 import requests
 

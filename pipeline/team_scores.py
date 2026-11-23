@@ -1,4 +1,4 @@
-"""Cell 11 (fixture score from predictor) + cell 12 (team strength onto player board)."""
+"""Fixture score from the goal predictor, and team strength mapped onto the player board."""
 import numpy as np
 import pandas as pd
 

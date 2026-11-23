@@ -1,4 +1,4 @@
-"""Cell 7: FIXTURE GAMBLER — ELO blending, team table, diffs."""
+"""FIXTURE GAMBLER — ELO blending, team table, diffs."""
 import pandas as pd
 
 

@@ -1,4 +1,4 @@
-"""Cells 14 + 15 + 17: scaling/xFPL/VORP helpers, minutes factors, blended signals, board assembly."""
+"""scaling/xFPL/VORP helpers, minutes factors, blended signals, board assembly."""
 import numpy as np
 import pandas as pd
 
@@ -118,7 +118,6 @@ def compute_vorp_dynamic(df, metric=""):
 
 
 def attach_minutes_factors(merged, LAST_GW):
-    # cell 14
     print(merged.columns.tolist())
     full_minutes = max(360, 0.6 * LAST_GW * 90)
     merged["minutes_factor"] = (merged["minutes"] / full_minutes).clip(upper=1)
@@ -130,7 +129,6 @@ def attach_minutes_factors(merged, LAST_GW):
 
 
 def attach_expected_return_signals(merged, LAST_GW, min_minutes=MIN_MINUTES):
-    # cell 15
     merged = merged[merged["minutes"] >= min_minutes].copy()
 
     merged["current_x_fpl_p90"] = merged.apply(expected_fpl_p90, axis=1).fillna(0)
@@ -213,7 +211,6 @@ def attach_expected_return_signals(merged, LAST_GW, min_minutes=MIN_MINUTES):
 
 
 def assemble_board(merged):
-    # cell 17
     weekly = compute_vorp_dynamic(merged, metric="weekly_expected_return")[["player_id","VORP"]].rename(columns={"VORP":"weekly_VORP"})
     overall = compute_vorp_dynamic(merged, metric="overall_expected_return")[["player_id","VORP"]].rename(columns={"VORP":"overall_VORP"})
 
