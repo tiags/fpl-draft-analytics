@@ -20,11 +20,17 @@ def load_pipeline_context():
     subprocess.run(["git", "-C", GIT_REPO, "pull"], check=True)
 
     state = get_gw_state()
+    
     GW = state["next_event"]
-    print(f"Next GW: {GW}")
-
     LAST_GW = GW - 1
-    TOTAL_MINUTES = GW * 90
+    print(f"Last GW played: {LAST_GW}, Next GW: {GW}")
+    
+    if not state["current_event_finished"]:
+            print(f"Warning: GW{LAST_GW} isn't finished yet, so its stats may be partial or empty. Board will be skewed for GW{GW}.")
+            if input("Continue anyway? [y/N] ").strip().lower() != "y":
+                raise SystemExit("Stopped: run again once the gameweek has finished.")
+    
+    TOTAL_MINUTES = LAST_GW * 90
 
     last_year_stats = pd.read_excel(LAST_YEAR_STATS_PATH)
 
@@ -41,7 +47,7 @@ def load_pipeline_context():
     elo = elo_hist[elo_hist["date"] == elo_hist["date"].max()].set_index("code")["elo"]
 
     return SimpleNamespace(
-        state=state, GW=GW, LAST_GW=LAST_GW, TOTAL_MINUTES=TOTAL_MINUTES,
+        state=state, GW=GW, LAST_GW=LAST_GW,
         last_year_stats=last_year_stats,
         FPL_DATA_FOLDER=FPL_DATA_FOLDER, PREV_DATA_FOLDER=PREV_DATA_FOLDER,
         fixtures_dir=fixtures_dir, prev_dir=prev_dir,
