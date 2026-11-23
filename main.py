@@ -20,7 +20,7 @@ def main():
     ctx = load_pipeline_context()                                    
     GW, LAST_GW = ctx.GW, ctx.LAST_GW
 
-    merged, base = build_player_base(ctx.playerstats, ctx.players, ctx.teams, TRANSFERRED_OUT)  
+    merged, _base = build_player_base(ctx.playerstats, ctx.players, ctx.teams, TRANSFERRED_OUT)  
     merged = attach_form(merged, GW, ctx.FPL_DATA_FOLDER)            
 
     this_seasons_fixtures = load_fixtures(ctx.fixtures_dir)            
@@ -33,7 +33,10 @@ def main():
     prev_fx = add_rest_days(prev_fx, prev_seasons_fixtures)
     print(f"GW{GW} fixtures: {(this_season_prem_matches['gameweek'] == GW).sum()}")
 
-    elo_all = load_elo_all()                                         
+    elo_all = load_elo_all()
+    latest_elo_gw = int(elo_all["gw"].max())
+    if latest_elo_gw < ctx.GW:
+        print(f"Warning: Elo data only goes up to GW{latest_elo_gw}; GW{ctx.GW} predictions reuse older ratings. Run the bookmarklet ELO scrape first.")                                         
     elo_long = build_elo_long(elo_all)
     this_season_prem_matches = attach_match_elo(this_season_prem_matches, elo_long)
     played, team_fixtures = build_team_table(this_season_prem_matches, GW)
