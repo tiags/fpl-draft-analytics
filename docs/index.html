@@ -119,6 +119,17 @@
     .fxpanel.open h3{margin-bottom:10px}
     .fxpanel:not(.open) #fxrows{display:none}    /* collapsed until tapped */
   }
+.glossary{margin:14px 0 6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--ink-dim)}
+  .glossary summary{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);padding:10px 14px;cursor:pointer;list-style:none}
+  .glossary summary::-webkit-details-marker{display:none}
+  .glossary summary::before{content:"▸ ";color:var(--mine)}
+  .glossary[open] summary::before{content:"▾ "}
+  .glossary-body{padding:4px 14px 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 28px}
+  .glossary h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mine);margin:12px 0 6px}
+  .glossary dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+  .glossary dt{font-family:var(--mono);font-weight:600;color:var(--ink);white-space:nowrap}
+  .glossary p{margin-bottom:6px}
+  .glossary .tldr{grid-column:1/-1;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -160,6 +171,54 @@
     <select class="teamsel" id="teamSelect"><option value="ALL">All teams</option></select>
   </div>
   <div class="wrap">
+        <details class="glossary">
+      <summary>How to read this board</summary>
+      <div class="glossary-body">
+        <div class="tldr">
+          <h4>TL;DR</h4>
+          <p><b>wVORP</b> (Weekly Value Over Replacement) ranks players for the coming gameweek. <b>oVORP</b> (Overall Value Over Replacement) ranks them for the long run.</p>
+          <p>Both measure how much better a player is than the best available/free player at the same position. Above 0: worth a squad spot. Around 0: easily replaced. Below 0: you can find better on the waiver wire.</p>
+          <p>"Free player" assumes an 8-team league, so roughly the 16th-best goalkeeper, 40th defender, 40th midfielder and 24th forward.</p>
+        </div>
+        <div>
+          <h4>Player stats</h4>
+          <dl>
+            <dt>xFPL</dt><dd>expected FPL points per 90 minutes, based on underlying stats</dd>
+            <dt>PPG</dt><dd>actual points per game this season</dd>
+            <dt>MIN/GW</dt><dd>average minutes per gameweek (90 = plays every minute)</dd>
+            <dt>DEF/90</dt><dd>tackles, blocks, interceptions and clearances per 90</dd>
+            <dt>xGI/90</dt><dd>expected goals + assists per 90</dd>
+            <dt>BPS/GW</dt><dd>average bonus-point-system score per gameweek</dd>
+            <dt>FORM</dt><dd>recent performance vs average (above 0 = in form)</dd>
+            <dt>FIX</dt><dd>how kind this week's fixture is, 0–100 (higher = easier)</dd>
+            <dt>PPG26</dt><dd>points per game last season (– = no data)</dd>
+            <dt>TM</dt><dd>team strength, 0–100</dd>
+          </dl>
+        </div>
+          <div>
+          <h4>What goes into each ranking</h4>
+          <dl>
+            <dt>wVORP</dt><dd>27% xFPL · 22.5% PPG · 18% fixture · 13.5% form · 4.5% bonus points · 4.5% team · 10% last season</dd>
+            <dt>oVORP</dt><dd>39% xFPL · 33% PPG · 10% bonus points · 8% team · 10% last season</dd>
+          </dl>
+          <p>Then adjusted: wVORP for recent minutes and injury/suspension risk, oVORP for minutes played this season. Low-minute players' xFPL is also pulled toward average, due to small sample.</p>
+        </div>
+          <h4>Buttons</h4>
+          <dl>
+            <dt>My squad</dt><dd>players on my team</dd>
+            <dt>Available</dt><dd>players nobody owns, free to pick up</dd>
+            <dt>60+ min/gw</dt><dd>regular starters only</dd>
+            <dt>Complete mid</dt><dd>midfielders who both defend and attack</dd>
+            <dt>Buy low</dt><dd>underlying numbers or last season's level ahead of current points</dd>
+            <dt>Sell high</dt><dd>current points ahead of underlying numbers or last season's level</dd>
+          </dl>
+          <h4>GW predictions</h4>
+          <p>Expected goals (xG) each team should create in the match, not a predicted score.</p>
+          <h4>Row colours</h4>
+          <p>Green edge: my player. Orange edge: available. Faded: owned by another team.</p>
+        </div>
+      </div>
+    </details>
     <table>
       <thead><tr>
         <th class="num">#</th>
