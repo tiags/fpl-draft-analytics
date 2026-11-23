@@ -7,10 +7,8 @@ import pandas as pd
 import requests
 
 from get_elo import update_elo_history
+from config import FPL_DATA_FOLDER, PREV_DATA_FOLDER, FPL_ELO_INSIGHTS_ROOT as GIT_REPO
 
-GIT_REPO = os.path.expanduser("~/MyProjects/FPL/FPL-Elo-Insights")
-FPL_DATA_FOLDER = os.path.expanduser('~/MyProjects/FPL/FPL-Elo-Insights/data/2026-2027')
-PREV_DATA_FOLDER = os.path.expanduser('~/MyProjects/FPL/FPL-Elo-Insights/data/2025-2026')
 LAST_YEAR_STATS_PATH = "seasons/2025-26/End2526_Full.xlsx"
 
 

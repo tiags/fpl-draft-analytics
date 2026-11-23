@@ -3,7 +3,8 @@ from io import StringIO
 import argparse
 import pandas as pd
 import requests
-import os
+
+from config import FPL_DATA_FOLDER
 
 HISTORY = Path("data/elo_history.csv")
 HISTORY_COLUMNS = ["date", "gw", "code", "elo"]
@@ -12,12 +13,10 @@ DRAFT_GAME_URL = "https://draft.premierleague.com/api/game"
 NAME_MAP = {"Man United": "Man Utd", "Forest": "Nott'm Forest", "Tottenham": "Spurs",
             "Coventry": "Coventry City", "Ipswich": "Ipswich Town", "Hull": "Hull City"}
 
-FPL_DATA_FOLDER = os.path.expanduser('~/MyProjects/FPL/FPL-Elo-Insights/data/2026-2027')
 teams = pd.read_csv(f"{FPL_DATA_FOLDER}/teams.csv",encoding="utf-8")
 
 def scrape_elo():
     # Imported here so the pipeline runs without playwright/bs4 installed.
-    from bs4 import BeautifulSoup
     from playwright.sync_api import sync_playwright
 
     with sync_playwright() as p:

@@ -1,4 +1,16 @@
 # config.py
+
+import os
+
+FPL_ELO_INSIGHTS_ROOT = os.path.expanduser(
+    os.environ.get("FPL_ELO_INSIGHTS_ROOT", "~/MyProjects/FPL/FPL-Elo-Insights"))
+
+CURRENT_SEASON = "2026-2027"
+PREVIOUS_SEASON = "2025-2026"
+
+FPL_DATA_FOLDER = os.path.join(FPL_ELO_INSIGHTS_ROOT, "data", CURRENT_SEASON)
+PREV_DATA_FOLDER = os.path.join(FPL_ELO_INSIGHTS_ROOT, "data", PREVIOUS_SEASON)
+
 LEAGUES = {
     "gegenpressure": {
         "name": "Gegen",
