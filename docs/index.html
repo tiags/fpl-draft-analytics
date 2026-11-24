@@ -175,10 +175,11 @@
       <summary>How to read this board</summary>
       <div class="glossary-body">
         <div class="tldr">
-          <h4>TL;DR</h4>
-          <p><b>wVORP</b> (Weekly Value Over Replacement) ranks players for the coming gameweek. <b>oVORP</b> (Overall Value Over Replacement) ranks them for the long run.</p>
-          <p>Both measure how much better a player is than the best available/free player at the same position. Above 0: worth a squad spot. Around 0: easily replaced. Below 0: you can find better on the waiver wire.</p>
-          <p>"Free player" assumes an 8-team league, so roughly the 16th-best goalkeeper, 40th defender, 40th midfielder and 24th forward.</p>
+<h4>TL;DR</h4>
+          <p><b>wVORP</b> (Weekly Value Over Replacement) ranks players for the upcoming gameweek. <b>oVORP</b> (Overall Value Over Replacement) ranks them across the overall season.</p>
+          <p>Both measure how a player compares to a "replacement-level" benchmark FPL asset. Above 0: above that benchmark. Below 0: below it.</p>
+
+          <p>The benchmark assumes an 8-team league, so roughly the 16th-best goalkeeper, 40th defender, 40th midfielder and 24th forward, as ranked by the model.</p>
         </div>
         <div>
           <h4>Player stats</h4>
@@ -190,18 +191,19 @@
             <dt>xGI/90</dt><dd>expected goals + assists per 90</dd>
             <dt>BPS/GW</dt><dd>average bonus-point-system score per gameweek</dd>
             <dt>FORM</dt><dd>recent performance vs average (above 0 = in form)</dd>
-            <dt>FIX</dt><dd>how kind this week's fixture is, 0–100 (higher = easier)</dd>
+            <dt>FIX</dt><dd>how favourable this week's fixture is, 0–100 </dd>
             <dt>PPG26</dt><dd>points per game last season (– = no data)</dd>
-            <dt>TM</dt><dd>team strength, 0–100</dd>
+            <dt>TM</dt><dd>team strength, 0–100, for their position</dd>
           </dl>
         </div>
           <div>
           <h4>What goes into each ranking</h4>
+          <p>Each factor is scaled and weighted into each VORP, with greater weight on underlying stats (xFPL) and actual points (PPG).</p>
           <dl>
-            <dt>wVORP</dt><dd>27% xFPL · 22.5% PPG · 18% fixture · 13.5% form · 4.5% bonus points · 4.5% team · 10% last season</dd>
-            <dt>oVORP</dt><dd>39% xFPL · 33% PPG · 10% bonus points · 8% team · 10% last season</dd>
+            <dt>wVORP</dt><dd>xFPL · PPG · fixture · form · bonus points · team score · last season</dd>
+            <dt>oVORP</dt><dd>xFPL · PPG · bonus points · team score · last season</dd>
           </dl>
-          <p>Then adjusted: wVORP for recent minutes and injury/suspension risk, oVORP for minutes played this season. Low-minute players' xFPL is also pulled toward average, due to small sample.</p>
+          <p>Then adjusted: wVORP for recent minutes and injury/suspension risk, oVORP for minutes played this season. Low-minute players' xFPL is also pulled toward average, due to small samples.</p>
         </div>
         <div> 
           <h4>Buttons</h4>
@@ -216,7 +218,7 @@
           <h4>GW predictions</h4>
           <p>Expected goals (xG) each team should create in the match, not a predicted score.</p>
           <h4>Row colours</h4>
-          <p>Green edge: my player. Orange edge: available. Faded: owned by another team.</p>
+          <p>Green: my player. Orange: available on waivers. Faded: owned by another team.</p>
         </div>
       </div>
     </details>
@@ -427,6 +429,8 @@
     if(!lg.length)throw new Error("No league columns found (expected mine_<League> columns).");
     leagues=lg;
     rows=parsed;
+    // CSV "gw" = last played gameweek, so +1 = the gameweek this board is for
+    document.getElementById("fxToggle").textContent=`GW ${Number(rows[0]?.gw)+1} xG Predictions`;
     // populate team dropdown from data (unique teams, sorted)
     const teams=[...new Set(rows.map(r=>norm(r.team_name||r.team)).filter(Boolean))].sort();
     const sel=document.getElementById("teamSelect");
