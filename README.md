@@ -100,8 +100,8 @@ buy_low  = 80% × (underlying stats − actual points)        → playing better
 sell_high = the exact opposite of buy_low
 ```
 
-```
 ## Project structure
+```
 main.py                  runs the full pipeline
 config.py                league IDs, data paths, season
 pipeline/
