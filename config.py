@@ -29,7 +29,7 @@ LEAGUES = {
         "league_size": 8,
         "format": "h2h",
         "known_taken": {557, 565, 572, 605, 567}, 
-        "known_mine": {650, },
+        "known_mine": {650, 579},
         "known_available": {608, 640, 580}    
     },
 }
