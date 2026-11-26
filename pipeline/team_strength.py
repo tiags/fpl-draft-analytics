@@ -1,4 +1,4 @@
-"""FIXTURE GAMBLER — ELO blending, team table, diffs."""
+""" ELO blending, team table, diffs."""
 import pandas as pd
 
 

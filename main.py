@@ -8,7 +8,7 @@ from pipeline.team_strength import (
     load_elo_all, build_elo_long, attach_match_elo,
     build_team_table, add_diffs, print_team_strength_diagnostics,
 )
-from pipeline.predictions import build_train_test, predict_fixtures, fit_pooled_goal_model
+from pipeline.predictions import build_train_test, predict_fixtures, fit_goal_model
 from pipeline.team_scores import build_team_fixture_scores, attach_team_and_fixture_scores
 from pipeline.last_season import attach_last_season_stats
 from pipeline.scoring import attach_minutes_factors, attach_expected_return_signals, assemble_board
@@ -47,8 +47,8 @@ def main():
 
     train, test, FEATURES = build_train_test(played, prev_played, GW)  
     
-    pooled_model = fit_pooled_goal_model(train, FEATURES)
-    test, predictions = predict_fixtures(test, train, pooled_model, FEATURES, ctx.teams, output_path="docs/data/predicted_fixtures_GW.csv")
+    goal_model = fit_goal_model(train, FEATURES)
+    test, predictions = predict_fixtures(test, train, goal_model, FEATURES, ctx.teams, output_path="docs/data/predicted_fixtures_GW.csv")
     
     team_fx = build_team_fixture_scores(test)                          
     print(merged["player_id"].duplicated().sum())

@@ -45,24 +45,24 @@ def stack_home_and_away(match_frame, FEATURES):
     return pd.concat([home_rows, away_rows], ignore_index=True)
 
 
-def fit_pooled_goal_model(train, FEATURES):
+def fit_goal_model(train, FEATURES):
     stacked_train = stack_home_and_away(train, FEATURES)
-    pooled_features = FEATURES + ["is_home"]
-    pooled_model = sm.GLM(stacked_train["team_xg"],
-                          sm.add_constant(stacked_train[pooled_features]),
+    model_features = FEATURES + ["is_home"]
+    goal_model = sm.GLM(stacked_train["team_xg"],
+                          sm.add_constant(stacked_train[model_features]),
                           family=sm.families.Poisson()).fit()
-    print("pooled home advantage:", round(float(np.exp(pooled_model.params["is_home"])), 3))
-    return pooled_model
+    print("home advantage:", round(float(np.exp(goal_model.params["is_home"])), 3))
+    return goal_model
 
 
-def predict_fixtures(test, train, pooled_model, FEATURES, teams,
+def predict_fixtures(test, train, goal_model, FEATURES, teams,
                      output_path="predicted_fixtures_GW.csv"):
-    pooled_features = FEATURES + ["is_home"]
-    home_design = sm.add_constant(test[FEATURES].assign(is_home=1)[pooled_features], has_constant="add")
-    away_design = sm.add_constant((-test[FEATURES]).assign(is_home=0)[pooled_features], has_constant="add")
+    model_features = FEATURES + ["is_home"]
+    home_design = sm.add_constant(test[FEATURES].assign(is_home=1)[model_features], has_constant="add")
+    away_design = sm.add_constant((-test[FEATURES]).assign(is_home=0)[model_features], has_constant="add")
 
-    test["pred_home_goals"] = pooled_model.predict(home_design).values
-    test["pred_away_goals"] = pooled_model.predict(away_design).values
+    test["pred_home_goals"] = goal_model.predict(home_design).values
+    test["pred_away_goals"] = goal_model.predict(away_design).values
     test["pred_goal_diff"]  = test["pred_home_goals"] - test["pred_away_goals"]
 
     mu_home = train["home_non_penalty_xg"].mean()      # league averages, for the normalization below
